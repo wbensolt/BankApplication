@@ -1,0 +1,13 @@
+{% extends 'bankapp/base.html' %}
+
+{% block title %}
+Home - SBAWebsite
+{% endblock %}
+
+{% block content %}
+<div class="text-center py-20">
+    <h1 class="text-5xl font-bold text-blue-600">Welcome to SBAWebsite</h1>
+    <p class="text-lg text-gray-600 mt-4">Your one-stop solution for managing loan requests and approvals.</p>
+    <a href="{% url 'dashboard' %}" class="mt-6 inline-block bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Get Started</a>
+</div>
+{% endblock %}
