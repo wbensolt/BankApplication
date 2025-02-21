@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     "bankapp",
     "tailwind",
     "theme",
-    "django_browser_reload",  
+    #"django_browser_reload",  
 
     #Base Django Apps
     "django.contrib.admin",
@@ -53,7 +53,8 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = [
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
+    #"django_browser_reload.middleware.BrowserReloadMiddleware",
+    #"django_browser_reload.middleware.BrowserReloadMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -68,7 +69,7 @@ ROOT_URLCONF = "SBAWebsite.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'bankapp/templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -129,7 +130,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

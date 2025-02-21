@@ -1,0 +1,24 @@
+{% extends 'bankapp/base.html' %}
+
+{% block title %}
+Dashboard - SBAWebsite
+{% endblock %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-6">Dashboard Overview</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Cards -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-bold text-blue-500">Total Loan Requests</h3>
+        <p class="text-4xl font-bold text-gray-800">23</p>
+    </div>
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-bold text-green-500">Approved Loans</h3>
+        <p class="text-4xl font-bold text-gray-800">15</p>
+    </div>
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h3 class="text-xl font-bold text-red-500">Rejected Loans</h3>
+        <p class="text-4xl font-bold text-gray-800">5</p>
+    </div>
+</div>
+{% endblock %}
