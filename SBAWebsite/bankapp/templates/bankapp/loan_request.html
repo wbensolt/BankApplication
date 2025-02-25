@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}SecureBank - Loan Request{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100 py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-2xl font-semibold text-gray-900">Loan Application</h2>
+                <p class="mt-1 text-sm text-gray-600">Please fill out all required information for your loan request.</p>
+            </div>
+            <form action="/loan/request" method="POST" class="px-6 py-4 space-y-6">
+                <!-- Personal Information -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="first-name" class="block text-sm font-medium text-gray-700">First Name</label>
+                            <input type="text" id="first-name" name="first-name" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="last-name" class="block text-sm font-medium text-gray-700">Last Name</label>
+                            <input type="text" id="last-name" name="last-name" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="email" name="email" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loan Details -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Loan Details</h3>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label for="loan-amount" class="block text-sm font-medium text-gray-700">Loan Amount ($)</label>
+                            <input type="number" id="loan-amount" name="loan-amount" min="1000" step="100" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="loan-purpose" class="block text-sm font-medium text-gray-700">Loan Purpose</label>
+                            <select id="loan-purpose" name="loan-purpose" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">Select a purpose</option>
+                                <option value="home">Home Purchase</option>
+                                <option value="car">Vehicle Purchase</option>
+                                <option value="business">Business</option>
+                                <option value="education">Education</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="loan-term" class="block text-sm font-medium text-gray-700">Loan Term (Years)</label>
+                            <select id="loan-term" name="loan-term" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="1">1 Year</option>
+                                <option value="2">2 Years</option>
+                                <option value="3">3 Years</option>
+                                <option value="5">5 Years</option>
+                                <option value="10">10 Years</option>
+                                <option value="15">15 Years</option>
+                                <option value="20">20 Years</option>
+                                <option value="30">30 Years</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                    <div>
+                        <label for="comments" class="block text-sm font-medium text-gray-700">Additional Comments</label>
+                        <textarea id="comments" name="comments" rows="4"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            placeholder="Please provide any additional information that might help us process your application."></textarea>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <input id="terms" name="terms" type="checkbox" required
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="terms" class="font-medium text-gray-700">I agree to the terms and conditions</label>
+                        <p class="text-gray-500">By submitting this application, you agree to our Terms of Service and
+                            Privacy Policy.</p>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

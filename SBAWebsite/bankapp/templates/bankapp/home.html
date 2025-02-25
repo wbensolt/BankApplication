@@ -1,13 +1,173 @@
-{% extends 'bankapp/base.html' %}
+{% extends "bankapp/base.html" %}
 
-{% block title %}
-Home - SBAWebsite
-{% endblock %}
+{% block title %}SecureBank - Home{% endblock %}
 
 {% block content %}
-<div class="text-center py-20">
-    <h1 class="text-5xl font-bold text-blue-600">Welcome to SBAWebsite</h1>
-    <p class="text-lg text-gray-600 mt-4">Your one-stop solution for managing loan requests and approvals.</p>
-    <a href="{% url 'dashboard' %}" class="mt-6 inline-block bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">Get Started</a>
+<!-- Hero Section with Swiper Carousel -->
+<div class="relative h-[600px] overflow-hidden">
+    <div class="swiper hero-swiper h-full">
+        <div class="swiper-wrapper">
+            <!-- Slide 1 -->
+            <div class="swiper-slide">
+                <div class="relative h-full">
+                    <img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?auto=format&fit=crop&q=80&w=2000" alt="Banking Made Simple" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="text-center text-white">
+                                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                    <span class="block">Banking Made Simple</span>
+                                    <span class="block text-blue-400">Secure and Efficient</span>
+                                </h1>
+                                <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                    Experience hassle-free banking with our digital platform. Apply for loans, track your applications, and communicate with your personal banking advisor - all in one place.
+                                </p>
+                                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                    <div class="rounded-md shadow">
+                                        <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                            Get Started
+                                            <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="swiper-slide">
+                <div class="relative h-full">
+                    <img src="https://images.unsplash.com/photo-1591696205602-2f950c417cb9?auto=format&fit=crop&q=80&w=2000" alt="Personal Loan Solutions" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="text-center text-white">
+                                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                    <span class="block">Personal Loan Solutions</span>
+                                    <span class="block text-blue-400">Tailored for You</span>
+                                </h1>
+                                <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                    Get personalized loan options with competitive rates. Our banking advisors are here to help you make the right choice for your financial future.
+                                </p>
+                                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                    <div class="rounded-md shadow">
+                                        <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                            Get Started
+                                            <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="swiper-slide">
+                <div class="relative h-full">
+                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2000" alt="Track Your Progress" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="text-center text-white">
+                                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                    <span class="block">Track Your Progress</span>
+                                    <span class="block text-blue-400">Real-time Updates</span>
+                                </h1>
+                                <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                    Stay informed with real-time updates on your loan application. Monitor every step of the process through our intuitive dashboard.
+                                </p>
+                                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                    <div class="rounded-md shadow">
+                                        <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                            Get Started
+                                            <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Swiper Navigation -->
+        <div class="swiper-button-prev text-white"></div>
+        <div class="swiper-button-next text-white"></div>
+
+        <!-- Swiper Pagination -->
+        <div class="swiper-pagination"></div>
+    </div>
 </div>
+<!-- Feature Cards -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                            <i data-lucide="log-in" class="h-6 w-6 text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Easy Application</h3>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Apply for loans with our streamlined digital process
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                            <i data-lucide="building-2" class="h-6 w-6 text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Personal Advisor</h3>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Get dedicated support from your banking advisor
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-8">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                            <i data-lucide="user-plus" class="h-6 w-6 text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">Track Progress</h3>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Monitor your loan application status in real-time
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const swiper = new Swiper('.hero-swiper', {
+        loop: true,
+        autoplay: { delay: 5000, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    });
+</script>
 {% endblock %}
