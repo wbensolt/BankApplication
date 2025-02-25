@@ -146,6 +146,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = 'bankapp.User'
 
 AUTHENTICATION_BACKENDS = [
-    'bankapp.views.EmailAuthBackend',  # Custom Email Auth Backend
-    'django.contrib.auth.backends.ModelBackend',  # Default Django Auth Backend
+    'django.contrib.auth.backends.ModelBackend',
 ]
+
