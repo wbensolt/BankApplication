@@ -1,7 +1,7 @@
 import requests
 from django.shortcuts import render, redirect
 from django.views import View
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, FormView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
@@ -10,22 +10,36 @@ from .forms import RegisterForm, CustomLoginForm
 from django.urls import reverse
 from django.contrib.auth import login as auth_login  # Avoid conflict with the view name
 from django.contrib.auth import get_user_model
-from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate
  
  ##### Login and registration #####
 
- #Register
-class RegisterView(CreateView):
-    form_class = RegisterForm
+User = get_user_model()
+
+class RegisterView(FormView):
     template_name = "bankapp/register.html"
-    success_url = reverse_lazy('login')
+    form_class = RegisterForm
+    success_url = '/dashboard/'  # Redirect to login after registration
 
     def form_valid(self, form):
         # Save the new user
         user = form.save()
-        # Automatically log in the user after registration
-        auth_login(self.request, user)
-        return super().form_valid(form)
+
+        # Authenticate the user using email and password
+        authenticated_user = authenticate(self.request, email=user.email, password=form.cleaned_data['password1'])
+        
+        # Check if the user is authenticated
+        if authenticated_user:
+            # Log the user in using ModelBackend
+            auth_login(self.request, authenticated_user)
+            return super().form_valid(form)
+        else:
+            # If authentication failed
+            form.add_error(None, "Authentication failed. Please check your credentials.")
+            return self.form_invalid(form)
 
 #Login
 class CustomLoginView(LoginView):
@@ -33,14 +47,20 @@ class CustomLoginView(LoginView):
     template_name = "bankapp/login.html"
 
     def form_valid(self, form):
-        # Get the authenticated user
-        user = form.get_user()
+        # Get the email and password from the form
+        email = form.cleaned_data.get('username')  # Using username field for email
+        password = form.cleaned_data.get('password')
 
-        # Explicitly log in the user
-        auth_login(self.request, user)
-        
-        # Redirect to the appropriate dashboard
-        return super().form_valid(form)
+        # Explicitly authenticate using email
+        user = authenticate(self.request, email=email, password=password)
+
+        # Check if the user is authenticated
+        if user is not None:
+            auth_login(self.request, user)
+            return super().form_valid(form)
+        else:
+            form.add_error(None, "Invalid email or password.")
+            return self.form_invalid(form)
 
     def get_success_url(self):
         # Redirect based on user role
@@ -48,21 +68,8 @@ class CustomLoginView(LoginView):
             return reverse('advisor_dashboard')
         else:
             return reverse('client_dashboard')
-        
-#Backend for e-mail authentification
-class EmailAuthBackend(ModelBackend):
-    def authenticate(self, request, username=None, password=None, **kwargs):
-        UserModel = get_user_model()
-        try:
-            # Check for email instead of username
-            user = UserModel.objects.get(email=username)
-        except UserModel.DoesNotExist:
-            return None
-        
-        # Verify the password
-        if user.check_password(password) and self.user_can_authenticate(user):
-            return user
-        return None
+
+
 
 #Logout message
 class CustomLogoutView(LogoutView):
