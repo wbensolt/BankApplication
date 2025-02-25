@@ -1,6 +1,6 @@
 {% extends "bankapp/base.html" %}
 
-{% block title %}SecureBank - Dashboard{% endblock %}
+{% block title %}SecureBank - Client Dashboard{% endblock %}
 
 {% block content %}
 <div class="min-h-[calc(100vh-4rem)] bg-gray-100">
@@ -10,32 +10,32 @@
         <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
             <div class="flex items-center">
                 <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
-                <span class="ml-2 text-xl font-semibold text-white">SecureBank</span>
+                <span class="ml-2 text-xl font-semibold text-white">Client Portal</span>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden">
                 <i data-lucide="x" class="h-6 w-6 text-white"></i>
             </button>
         </div>
         <nav class="mt-4">
-            <a href="/dashboard"
+            <a href="/client/dashboard"
                 class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
                 <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
                 <span class="mx-4">Dashboard</span>
             </a>
-            <a href="/loans"
+            <a href="/client/loans"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="file-text" class="h-5 w-5"></i>
-                <span class="mx-4">Loans</span>
+                <span class="mx-4">My Loans</span>
             </a>
-            <a href="/messages"
+            <a href="/client/messages"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="message-square" class="h-5 w-5"></i>
                 <span class="mx-4">Messages</span>
             </a>
-            <a href="/news"
+            <a href="/client/news"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="newspaper" class="h-5 w-5"></i>
-                <span class="mx-4">News</span>
+                <span class="mx-4">Bank News</span>
             </a>
         </nav>
     </div>
@@ -50,23 +50,23 @@
                 </button>
                 <div class="flex items-center">
                     <span class="text-sm text-gray-600">Welcome back,</span>
-                    <span class="ml-1 text-sm font-semibold text-gray-900">John Doe</span>
+                    <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard Content -->
         <div class="p-6">
-            <!-- Stats Cards -->
+            <!-- Client Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-blue-100">
-                            <i data-lucide="credit-card" class="h-6 w-6 text-blue-600"></i>
+                            <i data-lucide="file-text" class="h-6 w-6 text-blue-600"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-500">Active Loans</p>
-                            <p class="text-lg font-semibold text-gray-900">2</p>
+                            <p class="text-sm text-gray-500">Total Applications</p>
+                            <p class="text-lg font-semibold text-gray-900">5</p>
                         </div>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm text-gray-500">Approved Loans</p>
-                            <p class="text-lg font-semibold text-gray-900">3</p>
+                            <p class="text-lg font-semibold text-gray-900">2</p>
                         </div>
                     </div>
                 </div>
@@ -88,7 +88,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm text-gray-500">Pending Requests</p>
-                            <p class="text-lg font-semibold text-gray-900">1</p>
+                            <p class="text-lg font-semibold text-gray-900">3</p>
                         </div>
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                             <i data-lucide="mail" class="h-6 w-6 text-purple-600"></i>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-500">New Messages</p>
+                            <p class="text-sm text-gray-500">Messages from Advisor</p>
                             <p class="text-lg font-semibold text-gray-900">4</p>
                         </div>
                     </div>
@@ -110,57 +110,11 @@
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
                 </div>
-                <div class="divide-y divide-gray-200">
-                    <div class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <i data-lucide="file-text" class="h-4 w-4 text-blue-600"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-900">New loan application submitted</p>
-                                <p class="text-sm text-gray-500">2 hours ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                                    <i data-lucide="check" class="h-4 w-4 text-green-600"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-900">Loan application approved</p>
-                                <p class="text-sm text-gray-500">1 day ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                    <i data-lucide="message-square" class="h-4 w-4 text-purple-600"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-900">New message from advisor</p>
-                                <p class="text-sm text-gray-500">2 days ago</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="p-6">
+                    <p class="text-gray-600">Stay updated with your loan applications and messages from your advisor.</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('dashboard', () => ({
-            sidebarOpen: false
-        }))
-    })
-</script>
 {% endblock %}

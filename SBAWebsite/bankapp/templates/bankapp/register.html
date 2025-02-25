@@ -1,6 +1,6 @@
 {% extends "bankapp/base.html" %}
 
-{% block title %}SecureBank - Login{% endblock %}
+{% block title %}SecureBank - Register{% endblock %}
 
 {% block content %}
 <div class="flex min-h-screen">
@@ -17,15 +17,15 @@
         </div>
     </div>
 
-    <!-- Right Half: Login Form -->
+    <!-- Right Half: Registration Form -->
     <div class="w-full md:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div class="max-w-md w-full space-y-8">
             <div>
                 <div class="flex justify-center">
-                    <i data-lucide="log-in" class="h-12 w-12 text-blue-600"></i>
+                    <i data-lucide="user-plus" class="h-12 w-12 text-blue-600"></i>
                 </div>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Login to your account
+                    Create your account
                 </h2>
             </div>
 
@@ -40,20 +40,7 @@
             </div>
             {% endif %}
 
-            <!-- Display Form Errors -->
-            {% if form.errors %}
-            <div class="mb-4 p-2 text-white rounded-md bg-red-500">
-                <ul class="list-disc list-inside">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-
-            <form class="mt-8 space-y-6" method="POST" action="/login/">
+            <form class="mt-8 space-y-6" method="POST" action="{% url 'register' %}">
                 {% csrf_token %}
                 <div class="rounded-md shadow-sm -space-y-px">
                     <!-- Username -->
@@ -62,31 +49,60 @@
                         <input type="text" name="username" id="username" placeholder="Username" required
                             class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                             value="{{ form.username.value|default:'' }}">
+                        <!-- Error Message -->
+                        {% for error in form.username.errors %}
+                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="sr-only">Email address</label>
+                        <input type="email" name="email" id="email" placeholder="Email address" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            value="{{ form.email.value|default:'' }}">
+                        <!-- Error Message -->
+                        {% for error in form.email.errors %}
+                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        {% endfor %}
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label for="password" class="sr-only">Password</label>
-                        <input type="password" name="password" id="password" placeholder="Password" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <label for="password1" class="sr-only">Password</label>
+                        <input type="password" name="password1" id="password1" placeholder="Password" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <!-- Error Message -->
+                        {% for error in form.password1.errors %}
+                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        {% endfor %}
                     </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="password2" class="sr-only">Confirm password</label>
+                        <input type="password" name="password2" id="password2" placeholder="Confirm password" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <!-- Error Message -->
+                        {% for error in form.password2.errors %}
+                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Hidden Role Field (Client) -->
+                    {{ form.role.as_hidden }}
                 </div>
 
                 <div>
                     <button type="submit"
                         class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i data-lucide="log-in" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i>
+                            <i data-lucide="user-plus" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i>
                         </span>
-                        Login
+                        Create Account
                     </button>
                 </div>
             </form>
-
-            <p class="text-center text-gray-600">
-                Don't have an account? 
-                <a href="{% url 'register' %}" class="text-blue-600 hover:underline">Register</a>
-            </p>
         </div>
     </div>
 </div>

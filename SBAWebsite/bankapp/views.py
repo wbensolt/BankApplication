@@ -1,47 +1,99 @@
 import requests
 from django.shortcuts import render, redirect
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, CreateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import reverse_lazy
+from .forms import RegisterForm, CustomLoginForm
+from django.urls import reverse
+from django.contrib.auth import login as auth_login  # Avoid conflict with the view name
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
  
+ ##### Login and registration #####
+
+ #Register
+class RegisterView(CreateView):
+    form_class = RegisterForm
+    template_name = "bankapp/register.html"
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        # Save the new user
+        user = form.save()
+        # Automatically log in the user after registration
+        auth_login(self.request, user)
+        return super().form_valid(form)
+
+#Login
+class CustomLoginView(LoginView):
+    form_class = CustomLoginForm
+    template_name = "bankapp/login.html"
+
+    def form_valid(self, form):
+        # Get the authenticated user
+        user = form.get_user()
+
+        # Explicitly log in the user
+        auth_login(self.request, user)
+        
+        # Redirect to the appropriate dashboard
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect based on user role
+        if self.request.user.role == 'advisor':
+            return reverse('advisor_dashboard')
+        else:
+            return reverse('client_dashboard')
+        
+#Backend for e-mail authentification
+class EmailAuthBackend(ModelBackend):
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        UserModel = get_user_model()
+        try:
+            # Check for email instead of username
+            user = UserModel.objects.get(email=username)
+        except UserModel.DoesNotExist:
+            return None
+        
+        # Verify the password
+        if user.check_password(password) and self.user_can_authenticate(user):
+            return user
+        return None
+
+#Logout message
+class CustomLogoutView(LogoutView):
+    next_page = 'login'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Add logout success message
+        messages.success(request, "You have successfully logged out.")
+        return super().dispatch(request, *args, **kwargs)
+        
+  ##### Website Views #####      
 
 # Home Page View
 class HomeView(TemplateView):
     template_name = "bankapp/home.html"
 
-# Dashboard View
+
+##### Profile Views #####
+
 class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = "bankapp/dashboard.html"
+    def get_template_names(self):
+        if self.request.user.role == 'advisor':
+            return ['bankapp/advisor_dashboard.html']
+        else:
+            return ['bankapp/client_dashboard.html']
 
 # Project Overview View
 class ProjectOverviewView(LoginRequiredMixin, TemplateView):
     template_name = "bankapp/project_overview.html"
 
-class LoginView(View):
-    template_name = "bankapp/login.html"
-
-    def get(self, request):
-        return render(request, self.template_name)
-
-    def post(self, request):
-        # Get form data
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        # Send login request to FastAPI
-        payload = {"username": email, "password": password}
-        response = requests.post("http://127.0.0.1:8001/auth/login", data=payload)
-
-        if response.status_code == 200:
-            # Store the JWT token in session
-            request.session["access_token"] = response.json().get("token")
-            messages.success(request, "Logged in successfully!")
-            return redirect("loan_predict")
-        else:
-            messages.error(request, "Login failed. Please check your credentials.")
-            return render(request, self.template_name)
-
+##### Predictions View #####
 
 class LoanPredictionView(View):
     template_name = "bankapp/loan_predict.html"
@@ -87,16 +139,3 @@ class LoanPredictionView(View):
             messages.error(request, "Prediction failed. Please check the input data.")
             return render(request, self.template_name)
 
-
-class LogoutView(View):
-    def get(self, request):
-        if token := request.session.get("access_token"):
-            # Send logout request to FastAPI
-            headers = {"Authorization": f"Bearer {token}"}
-            requests.post("http://127.0.0.1:8001/auth/logout", headers=headers)
-
-            # Clear the session
-            request.session.flush()
-
-        messages.success(request, "Logged out successfully!")
-        return redirect("login")
