@@ -1,0 +1,25 @@
+{% extends "bankapp/base.html" %}
+
+{% block title %}SecureBank - News{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-8">Latest News</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {% for article in news_articles %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img src="{{ article.image.url }}" alt="{{ article.title }}" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-2">{{ article.title }}</h4>
+                    <p class="text-sm text-gray-600">{{ article.created_at|date:"F j, Y" }}</p>
+                    <p class="text-gray-800 mt-2">{{ article.content|truncatewords:20 }}</p>
+                    <a href="{% url 'news_detail' article.id %}" class="text-blue-600 hover:text-blue-800">Read More →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
