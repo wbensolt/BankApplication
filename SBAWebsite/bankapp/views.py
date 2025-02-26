@@ -292,14 +292,6 @@ class AuthService:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        
-        #print("je suis la")
-        #if user.is_active:
-        #    raise HTTPException(status_code=400, detail="Le compte est déjà activé")
-
-        #user.set_password(password)  # Utiliser la méthode set_password pour hasher le mot de passe
-        #user.is_active = True
-        #user.save()
 
         access_token, expires_at = self._request_new_token(user.email, password)
         
@@ -312,8 +304,8 @@ class AuthService:
             defaults={"token": access_token, "expires_at": expires_at_datetime}
         )
 
-        #self.start_token_refresh_timer(user)
-        #return {"message": "Activation réussie. Vous pouvez maintenant vous connecter.", "access_token": access_token}
+        self.start_token_refresh_timer(user)
+        return {"message": "Activation réussie. Vous pouvez maintenant vous connecter.", "access_token": access_token}
 
     def _request_new_token(self, email: str, password: str):
         fastapi_url = settings.FASTAPI_URL + "/auth/login"
@@ -323,8 +315,6 @@ class AuthService:
             raise HTTPException(status_code=500, detail="Échec de la récupération du token FastAPI")
         
         token_data = response.json()
-        print("je suis la",token_data)
-        print("Fini")
         return token_data.get("access_token"), 1800  # 30 minutes de validité
 
     def get_valid_token(self, user: User):
