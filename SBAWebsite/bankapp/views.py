@@ -14,7 +14,7 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import AdvisorClientPairing
+from .models import AdvisorClientPairing, Conversation
 
  ##### Login and registration #####
 
@@ -32,6 +32,12 @@ class RegisterView(FormView):
         # Automatically assign an advisor if the user is a client
         if user.role == 'client':
             AdvisorClientPairing.auto_assign(user)
+            # Fetch the paired advisor
+            pairing = AdvisorClientPairing.objects.get(client=user)
+            advisor = pairing.advisor
+
+            # Create a conversation between the client and the assigned advisor
+            Conversation.objects.get_or_create(client=user, advisor=advisor)
 
         # Authenticate the user using email and password
         authenticated_user = authenticate(self.request, email=user.email, password=form.cleaned_data['password1'])
@@ -161,68 +167,82 @@ class LoanPredictionView(View):
             return render(request, self.template_name)
 
 ########################################### Messages ############################################################
-from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth import get_user_model
-from django.views.generic import ListView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
 from .models import Conversation, Message
+from django.urls import reverse
 
 User = get_user_model()
 
-class MessageListView(LoginRequiredMixin, ListView):
-    model = Conversation
-    template_name = 'bankapp/messages_list.html'
-    context_object_name = 'conversations'
-
+class MessageListView(ListView):
+    template_name = "bankapp/messages_list.html"
+    context_object_name = "conversations"
+    
     def get_queryset(self):
-        # Check user role and return conversations accordingly
-        if self.request.user.role == 'client':
-            return Conversation.objects.filter(client=self.request.user)
-        elif self.request.user.role == 'advisor':
-            return Conversation.objects.filter(advisor=self.request.user)
+        user = self.request.user
+        
+        # If the user is a client, get their assigned advisor and conversations
+        if user.role == 'client':
+            try:
+                pairing = AdvisorClientPairing.objects.get(client=user)
+                advisor = pairing.advisor
+                
+                # Ensure a conversation exists between the client and advisor
+                conversation, created = Conversation.objects.get_or_create(client=user, advisor=advisor)
+                
+                return Conversation.objects.filter(client=user)
+            except AdvisorClientPairing.DoesNotExist:
+                return Conversation.objects.none()
+
+        # If the user is an advisor, get all paired clients and their conversations
+        elif user.role == 'advisor':
+            # Get all clients paired with this advisor
+            clients = AdvisorClientPairing.objects.filter(advisor=user).values_list('client', flat=True)
+            return Conversation.objects.filter(advisor=user, client__in=clients)
+        
         return Conversation.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        active_conversation = None
-        
-        # Get conversation details if a conversation is selected
-        if 'pk' in self.kwargs:
-            active_conversation = get_object_or_404(Conversation, pk=self.kwargs['pk'])
-        
-        context['active_conversation'] = active_conversation
         context['user_role'] = self.request.user.role
         
-        # Determine URL base for message sending
-        if self.request.user.role == 'client':
-            context['send_message_url'] = 'client_message_create'
-        elif self.request.user.role == 'advisor':
-            context['send_message_url'] = 'advisor_message_create'
+        # Get the active conversation if it exists
+        conversation_id = self.kwargs.get('pk')
+        if conversation_id:
+            context['active_conversation'] = get_object_or_404(Conversation, id=conversation_id)
+        else:
+            context['active_conversation'] = None
         
         return context
 
-class MessageCreateView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        # Get the conversation
-        conversation = get_object_or_404(Conversation, pk=pk)
+class MessageDetailView(DetailView):
+    model = Conversation
+    template_name = "bankapp/messages_list.html"
+    context_object_name = "active_conversation"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_role'] = self.request.user.role
         
-        # Check if the user is part of the conversation
-        if (conversation.client == request.user) or (conversation.advisor == request.user):
-            content = request.POST.get('content')
-            if content:
-                # Create a new message
-                Message.objects.create(
-                    conversation=conversation,
-                    sender=request.user,
-                    content=content
-                )
-        
-        # Redirect back to the conversation detail view
-        if request.user.role == 'client':
-            return redirect('client_message_detail', pk=pk)
+        # Fetch conversations for the sidebar
+        user = self.request.user
+        if user.role == 'client':
+            context['conversations'] = Conversation.objects.filter(client=user)
+        elif user.role == 'advisor':
+            context['conversations'] = Conversation.objects.filter(advisor=user)
         else:
-            return redirect('advisor_message_detail', pk=pk)
-
+            context['conversations'] = Conversation.objects.none()
         
+        return context
 
+class MessageCreateView(CreateView):
+    model = Message
+    fields = ['content']
 
+    def form_valid(self, form):
+        conversation = get_object_or_404(Conversation, pk=self.kwargs['pk'])
+        form.instance.conversation = conversation
+        form.instance.sender = self.request.user
+        form.save()
+        return redirect(reverse('message_detail', kwargs={'pk': conversation.pk}))
