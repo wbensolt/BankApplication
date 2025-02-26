@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView,
-                   MessageListView, MessageCreateView, MessageDetailView
+                   MessageListView, MessageCreateView, MessageDetailView, NewsListView, NewsDetailView, NewsCreateView,NewsUpdateView,NewsDeleteView
                     )
 
 urlpatterns = [
@@ -22,17 +22,14 @@ urlpatterns = [
     # Role-Based Dashboards
     path('advisor/dashboard/', DashboardView.as_view(), name='advisor_dashboard'),
     path('client/dashboard/', DashboardView.as_view(), name='client_dashboard'),
-     # Message URLs
-    
-
-
+    # Message URLs
 
     path('messages/', MessageListView.as_view(), name='messages_list'),
     path('messages/<int:pk>/', MessageListView.as_view(), name='message_detail'),
     path('messages/<int:pk>/send/', MessageCreateView.as_view(), name='message_create'),
 
 
-        # Role-Based Messages URLs
+# Role-Based Messages URLs
 # Client Message URLs
     path('client/messages/', MessageListView.as_view(), name='client_messages_list'),
     path('client/messages/<int:pk>/', MessageDetailView.as_view(), name='client_message_detail'),
@@ -43,4 +40,24 @@ urlpatterns = [
     path('advisor/messages/<int:pk>/', MessageDetailView.as_view(), name='advisor_message_detail'),
     path('advisor/messages/<int:pk>/send/', MessageCreateView.as_view(), name='advisor_message_create'),
 
+#News Urls
+
+  # News URLs
+   path('news/', NewsListView.as_view(), name='news_list'),
+    path('news/<int:pk>/', NewsDetailView.as_view(), name='news_detail'),
+
+    
+
+    # Client URLs
+ 
+    path('client/news/', NewsListView.as_view(), name='client_news_list'),
+    path('client/news/<int:pk>/', NewsDetailView.as_view(), name='client_news_detail'),
+
+    # Advisor URLs
+    
+    path('advisor/news/', NewsListView.as_view(), name='advisor_news_list'),
+    path('advisor/news/<int:pk>/', NewsDetailView.as_view(), name='advisor_news_detail'),
+    path('advisor/news/create/', NewsCreateView.as_view(), name='news_create'),
+    path('advisor/news/<int:pk>/edit/', NewsUpdateView.as_view(), name='news_update'),
+    path('advisor/news/<int:pk>/delete/', NewsDeleteView.as_view(), name='news_delete'),
 ]
