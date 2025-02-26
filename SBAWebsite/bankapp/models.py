@@ -120,3 +120,8 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender} at {self.timestamp}"
+
+class TokenModel(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    token = models.TextField()
+    expires_at = models.DateTimeField()
