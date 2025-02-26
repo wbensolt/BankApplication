@@ -159,3 +159,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# settings.py
+FASTAPI_URL = "http://localhost:8000"  # Exemple d'URL, ajustez-la selon votre configuration

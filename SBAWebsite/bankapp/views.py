@@ -15,6 +15,17 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from .models import AdvisorClientPairing, Conversation
+import threading
+import time
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.views.generic import ListView, DetailView
+from .models import TokenModel
+from fastapi import HTTPException
+from django.utils import timezone  # Importer timezone pour gérer les dates
+from datetime import timedelta  # Importer timedelta pour gérer les dates d'expiration
+from sqlalchemy.orm import Session
+from .models import User  # Assurez-vous d'importer vos modèles correctement
 
  ##### Login and registration #####
 
@@ -246,3 +257,84 @@ class MessageCreateView(CreateView):
         form.instance.sender = self.request.user
         form.save()
         return redirect(reverse('message_detail', kwargs={'pk': conversation.pk}))
+
+import threading
+import time
+from datetime import timedelta
+from fastapi import HTTPException
+from django.utils import timezone
+from .models import User, TokenModel
+import requests
+from django.conf import settings
+
+class AuthService:
+    def __init__(self, db):
+        self.db = db  # Cela doit être une instance de la session Django ORM
+        self.token_check_interval = 1800  # 30 minutes
+        self.token_thread = None
+
+    def start_token_refresh_timer(self, user: User):
+        if not self.token_thread:
+            self.token_thread = threading.Thread(target=self._refresh_token_periodically, args=(user,))
+            self.token_thread.daemon = True
+            self.token_thread.start()
+
+    def _refresh_token_periodically(self, user: User):
+        while True:
+            time.sleep(self.token_check_interval)
+            try:
+                self.get_valid_token(user)
+            except HTTPException as e:
+                print(f"Erreur lors du rafraîchissement du token: {e.detail}")
+
+    def activate_user_and_fetch_token(self, email: str, password: str):
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        #print("je suis la")
+        #if user.is_active:
+        #    raise HTTPException(status_code=400, detail="Le compte est déjà activé")
+
+        #user.set_password(password)  # Utiliser la méthode set_password pour hasher le mot de passe
+        #user.is_active = True
+        #user.save()
+
+        access_token, expires_at = self._request_new_token(user.email, password)
+        
+        # Convertir expires_at en datetime pour le modèle Django
+        expires_at_datetime = timezone.now() + timedelta(seconds=expires_at)
+
+        # Mettre à jour ou créer le token dans la base de données
+        TokenModel.objects.update_or_create(
+            user=user,
+            defaults={"token": access_token, "expires_at": expires_at_datetime}
+        )
+
+        #self.start_token_refresh_timer(user)
+        #return {"message": "Activation réussie. Vous pouvez maintenant vous connecter.", "access_token": access_token}
+
+    def _request_new_token(self, email: str, password: str):
+        fastapi_url = settings.FASTAPI_URL + "/auth/login"
+        response = requests.post(fastapi_url, data={"email": email, "password": password})
+       
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Échec de la récupération du token FastAPI")
+        
+        token_data = response.json()
+        print("je suis la",token_data)
+        print("Fini")
+        return token_data.get("access_token"), 1800  # 30 minutes de validité
+
+    def get_valid_token(self, user: User):
+        token_obj = TokenModel.objects.filter(user=user).first()
+        
+        if not token_obj or token_obj.expires_at < timezone.now():
+            access_token, _ = self._request_new_token(user.email, user.password)  # Utiliser le mot de passe de l'utilisateur
+            token_obj, created = TokenModel.objects.update_or_create(
+                user=user,
+                defaults={"token": access_token, "expires_at": timezone.now() + timedelta(seconds=1800)}  # Mettre à jour l'expiration
+            )
+        
+        return token_obj.token
