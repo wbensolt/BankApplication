@@ -1,0 +1,47 @@
+{% extends "bankapp/base.html" %}
+{% load static %}
+{% block title %}SecureBank - News & Updates{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Latest News & Updates</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Stay informed about the latest updates and important announcements from SecureBank.</p>
+        </div>
+
+        <!-- News Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for article in news_articles %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1">
+                {% if article.image %}
+                <img src="{{ article.image.url }}" alt="{{ article.title }}" class="w-full h-48 object-cover">
+                {% else %}
+                <div class="w-full h-48 bg-gray-100 flex items-center justify-center">
+                    <i data-lucide="newspaper" class="h-12 w-12 text-gray-400"></i>
+                </div>
+                {% endif %}
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <span class="text-gray-500 text-sm">{{ article.published_date|date:"F d, Y" }}</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ article.title }}</h3>
+                    <p class="text-gray-600 mb-4">{{ article.content|truncatewords:30 }}</p>
+                    <a href="{% url 'news_detail' article.pk %}" class="inline-flex items-center text-blue-600 hover:text-blue-700">
+                        Read More
+                        <i data-lucide="chevron-right" class="h-4 w-4 ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <i data-lucide="newspaper" class="h-12 w-12 text-gray-400 mx-auto mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900">No News Articles</h3>
+                <p class="text-gray-500 mt-2">Check back later for updates.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

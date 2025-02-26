@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, NewsArticle
 
 from .models import AdvisorClientPairing
 
@@ -57,3 +57,16 @@ class CustomUserAdmin(UserAdmin):
 
 # Register the Custom User Admin
 admin.site.register(User, CustomUserAdmin)
+
+
+
+
+##### News
+
+# Adding a new article
+class NewsArticleAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ('title',)
+
+# Register the News Model
+admin.site.register(NewsArticle)

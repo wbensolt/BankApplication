@@ -1,0 +1,49 @@
+{% extends "bankapp/base.html" %}
+{% load static %}
+{% block title %}{{ news_article.title }} - SecureBank News{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100 py-12">
+    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Article Header -->
+        <div class="mb-8">
+            <div class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+                <time datetime="{{ news_article.published_date|date:'Y-m-d' }}">
+                    {{ news_article.published_date|date:"F d, Y" }}
+                </time>
+                {% if request.user.role == 'advisor' %}
+                <div class="flex items-center space-x-2 ml-auto">
+                    <a href="{% url 'news_update' news_article.pk %}" class="text-blue-600 hover:text-blue-900">
+                        <i data-lucide="edit" class="h-5 w-5"></i>
+                    </a>
+                    <a href="{% url 'news_delete' news_article.pk %}" class="text-red-600 hover:text-red-900">
+                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ news_article.title }}</h1>
+        </div>
+
+        <!-- Featured Image -->
+        {% if news_article.image %}
+        <div class="relative h-[400px] rounded-lg overflow-hidden mb-8">
+            <img src="{{ news_article.image.url }}" alt="{{ news_article.title }}" class="w-full h-full object-cover">
+        </div>
+        {% endif %}
+
+        <!-- Article Content -->
+        <div class="prose prose-lg max-w-none bg-white rounded-lg shadow-lg p-8">
+            {{ news_article.content|linebreaks }}
+        </div>
+
+        <!-- Back Button -->
+        <div class="mt-8">
+            <a href="{% url 'news_list' %}" class="inline-flex items-center text-blue-600 hover:text-blue-700">
+                <i data-lucide="chevron-left" class="h-4 w-4 mr-1"></i>
+                Back to News
+            </a>
+        </div>
+    </article>
+</div>
+{% endblock %}
