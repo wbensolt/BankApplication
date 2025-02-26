@@ -1,11 +1,22 @@
+
+# Standard Libraries
 import requests
-from django.shortcuts import render, redirect
-from django.views import View
-from django.views.generic import TemplateView, CreateView, FormView
+
+# Django Shortcuts and Utilities
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+
+# Django Authentication
+from django.contrib.auth import get_user_model, authenticate, login as auth_login  # Avoid conflict with the view name
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.urls import reverse_lazy
+
+# Django Views
+from django.views import View
+from django.views.generic import TemplateView, CreateView, FormView, ListView, DetailView, UpdateView, DeleteView
+
+# Forms and Models
 from .forms import RegisterForm, CustomLoginForm
 from django.urls import reverse
 from django.contrib.auth import login as auth_login  # Avoid conflict with the view name
@@ -14,23 +25,14 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import AdvisorClientPairing, Conversation
-import threading
-import time
-from django.conf import settings
-from django.shortcuts import get_object_or_404
-from django.views.generic import ListView, DetailView
-from .models import TokenModel
-from fastapi import HTTPException
-from django.utils import timezone  # Importer timezone pour gérer les dates
-from datetime import timedelta  # Importer timedelta pour gérer les dates d'expiration
-from sqlalchemy.orm import Session
-from .models import User  # Assurez-vous d'importer vos modèles correctement
+from .models import AdvisorClientPairing, Conversation, AdvisorClientPairing, Conversation, Message, NewsArticle
+
 
  ##### Login and registration #####
 
 User = get_user_model()
 
+#Registerview 
 class RegisterView(FormView):
     template_name = "bankapp/register.html"
     form_class = RegisterForm
@@ -64,7 +66,8 @@ class RegisterView(FormView):
             return self.form_invalid(form)
 
 
-#Login
+# Login view
+
 class CustomLoginView(LoginView):
     form_class = CustomLoginForm
     template_name = "bankapp/login.html"
@@ -94,7 +97,7 @@ class CustomLoginView(LoginView):
 
 
 
-#Logout message
+# Logout View with Message
 class CustomLogoutView(LogoutView):
     next_page = 'login'
 
@@ -103,15 +106,16 @@ class CustomLogoutView(LogoutView):
         messages.success(request, "You have successfully logged out.")
         return super().dispatch(request, *args, **kwargs)
         
-  ##### Website Views #####      
+##### Website Views  
 
 # Home Page View
 class HomeView(TemplateView):
     template_name = "bankapp/home.html"
 
 
-##### Profile Views #####
+##### Profile Views 
 
+# Dashboard View with Role-Based Template
 class DashboardView(LoginRequiredMixin, TemplateView):
     """
     Role-Based Dashboard View
@@ -127,11 +131,32 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             # Default to client dashboard if role is undefined
             return ['bankapp/client_dashboard.html']
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Messages Count
+        if user.role == 'client':
+            # Count messages from the assigned advisor
+            conversations = Conversation.objects.filter(client=user)
+            context['messages_count'] = Message.objects.filter(conversation__in=conversations).count()
+        elif user.role == 'advisor':
+            # Count all messages from clients assigned to this advisor
+            conversations = Conversation.objects.filter(advisor=user)
+            context['messages_count'] = Message.objects.filter(conversation__in=conversations).count()
+        
+        # News Articles
+        context['news_articles'] = NewsArticle.objects.all().order_by('-published_date')[:5]  # Get latest 5 news articles
+
+        return context
+
+
+
 # Project Overview View
 class ProjectOverviewView(LoginRequiredMixin, TemplateView):
     template_name = "bankapp/project_overview.html"
 
-##### Predictions View #####
+##### Predictions View 
 
 class LoanPredictionView(View):
     template_name = "bankapp/loan_predict.html"
@@ -177,15 +202,13 @@ class LoanPredictionView(View):
             messages.error(request, "Prediction failed. Please check the input data.")
             return render(request, self.template_name)
 
-########################################### Messages ############################################################
-from django.views.generic import ListView, DetailView, CreateView
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404, redirect
-from .models import Conversation, Message
-from django.urls import reverse
+
+##### Messages Views
+
 
 User = get_user_model()
 
+# Message List View
 class MessageListView(ListView):
     template_name = "bankapp/messages_list.html"
     context_object_name = "conversations"
@@ -226,7 +249,8 @@ class MessageListView(ListView):
             context['active_conversation'] = None
         
         return context
-
+    
+# Message Detail View
 class MessageDetailView(DetailView):
     model = Conversation
     template_name = "bankapp/messages_list.html"
@@ -246,7 +270,8 @@ class MessageDetailView(DetailView):
             context['conversations'] = Conversation.objects.none()
         
         return context
-
+    
+# Message Create View
 class MessageCreateView(CreateView):
     model = Message
     fields = ['content']
@@ -328,3 +353,67 @@ class AuthService:
             )
         
         return token_obj.token
+
+###### News 
+
+#News view 
+
+# List View for all users (both clients and advisors)
+# List View
+class NewsListView(LoginRequiredMixin, ListView):
+    model = NewsArticle
+    template_name = 'bankapp/news_list.html'
+    context_object_name = 'news_articles'
+
+    def get_queryset(self):
+        return NewsArticle.objects.all().order_by('-published_date')
+
+    def get_template_names(self):
+        if self.request.user.role == 'advisor':
+            return ['bankapp/advisor_news_list.html']
+        else:
+            return ['bankapp/client_news_list.html']
+
+
+# Detail View
+class NewsDetailView(LoginRequiredMixin, DetailView):
+    model = NewsArticle
+    template_name = 'bankapp/news_detail.html'
+    context_object_name = 'news_article'
+
+
+# Create View (Advisor Only)
+class NewsCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = NewsArticle
+    fields = ['title', 'content', 'image']
+    template_name = 'bankapp/news_form.html'
+    success_url = reverse_lazy('advisor_news_list')
+
+    def form_valid(self, form):
+        # Set the author to the currently logged-in user
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        return self.request.user.role == 'advisor'
+
+
+# Update View (Advisor Only)
+class NewsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = NewsArticle
+    fields = ['title', 'content', 'image']
+    template_name = 'bankapp/news_form.html'
+    success_url = reverse_lazy('advisor_news_list')
+
+    def test_func(self):
+        return self.request.user.role == 'advisor'
+
+
+# Delete View (Advisor Only)
+class NewsDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = NewsArticle
+    template_name = 'bankapp/news_confirm_delete.html'
+    success_url = reverse_lazy('advisor_news_list')
+
+    def test_func(self):
+        return self.request.user.role == 'advisor'

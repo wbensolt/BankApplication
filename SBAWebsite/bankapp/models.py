@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils import timezone
 from django.db import models
+
+###### User Model and assigned roles 
 
 class UserManager(BaseUserManager):
     """
@@ -50,7 +53,7 @@ class User(AbstractUser):
         return f"{self.email} ({self.role})"
     
 
-    #Pairing advisors to clients 
+#Pairing advisors to clients 
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from random import choice
@@ -89,8 +92,8 @@ class AdvisorClientPairing(models.Model):
                 cls.objects.create(client=client, advisor=assigned_advisor)
 
 
-################################## Messages #################################################
-from django.utils import timezone
+
+###### Messages 
 
 User = get_user_model()
 
@@ -120,6 +123,25 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender} at {self.timestamp}"
+    
+
+###### News 
+
+#News model 
+class NewsArticle(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    image = models.ImageField(upload_to='news_images/', blank=True, null=True)
+    published_date = models.DateTimeField(default=timezone.now)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def excerpt(self):
+        return self.content[:100] + '...' if len(self.content) > 100 else self.content
+
 
 class TokenModel(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
