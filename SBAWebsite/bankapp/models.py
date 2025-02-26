@@ -48,3 +48,75 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.email} ({self.role})"
+    
+
+    #Pairing advisors to clients 
+from django.contrib.auth import get_user_model
+from django.db.models import Count
+from random import choice
+
+User = get_user_model()
+
+class AdvisorClientPairing(models.Model):
+    """
+    Advisor-Client Pairing Model
+    - Stores the advisor-client relationships.
+    - Ensures only clients are assigned advisors.
+    """
+    client = models.OneToOneField(User, on_delete=models.CASCADE, related_name='advisor_pairing')
+    advisor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
+
+    def __str__(self):
+        return f"{self.client.email} paired with {self.advisor.email}"
+
+    @classmethod
+    def assign_advisor(cls, client):
+        """
+        Assigns an advisor to the client using round-robin strategy.
+        - Only assigns advisors to clients (not other advisors).
+        """
+        advisors = User.objects.filter(role='advisor').annotate(client_count=Count('clients')).order_by('client_count')
+        return advisors.first() if advisors.exists() else None
+
+    @classmethod
+    def auto_assign(cls, client):
+        """
+        Automatically assigns an advisor to the client upon registration.
+        """
+        if client.role == 'client' and not cls.objects.filter(client=client).exists():
+            assigned_advisor = cls.assign_advisor(client)
+            if assigned_advisor:
+                cls.objects.create(client=client, advisor=assigned_advisor)
+
+
+################################## Messages #################################################
+from django.utils import timezone
+
+User = get_user_model()
+
+class Conversation(models.Model):
+    """
+    Conversation Model
+    - Manages chat sessions between a client and an advisor.
+    - Each conversation is unique to a client-advisor pair.
+    """
+    client = models.ForeignKey(User, related_name='client_conversations', on_delete=models.CASCADE)
+    advisor = models.ForeignKey(User, related_name='advisor_conversations', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Conversation between {self.client} and {self.advisor}"
+
+class Message(models.Model):
+    """
+    Message Model
+    - Stores individual messages within a conversation.
+    - Messages can be sent by either the client or the advisor.
+    """
+    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Message from {self.sender} at {self.timestamp}"

@@ -27,7 +27,7 @@
                 <i data-lucide="file-text" class="h-5 w-5"></i>
                 <span class="mx-4">Loan Applications</span>
             </a>
-            <a href="/advisor/messages"
+            <a href="{% url 'advisor_messages_list' %}"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="message-square" class="h-5 w-5"></i>
                 <span class="mx-4">Messages</span>
@@ -50,7 +50,7 @@
                 </button>
                 <div class="flex items-center">
                     <span class="text-sm text-gray-600">Welcome back,</span>
-                    <span class="ml-1 text-sm font-semibold text-gray-900">Sarah Wilson</span>
+                    <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
                 </div>
             </div>
         </div>

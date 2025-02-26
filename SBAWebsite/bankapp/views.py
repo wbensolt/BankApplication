@@ -14,7 +14,8 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
- 
+from .models import AdvisorClientPairing
+
  ##### Login and registration #####
 
 User = get_user_model()
@@ -22,11 +23,15 @@ User = get_user_model()
 class RegisterView(FormView):
     template_name = "bankapp/register.html"
     form_class = RegisterForm
-    success_url = '/dashboard/'  # Redirect to login after registration
+    success_url = '/dashboard/'  # Redirect to dashboard after registration
 
     def form_valid(self, form):
         # Save the new user
         user = form.save()
+
+        # Automatically assign an advisor if the user is a client
+        if user.role == 'client':
+            AdvisorClientPairing.auto_assign(user)
 
         # Authenticate the user using email and password
         authenticated_user = authenticate(self.request, email=user.email, password=form.cleaned_data['password1'])
@@ -40,6 +45,7 @@ class RegisterView(FormView):
             # If authentication failed
             form.add_error(None, "Authentication failed. Please check your credentials.")
             return self.form_invalid(form)
+
 
 #Login
 class CustomLoginView(LoginView):
@@ -90,10 +96,18 @@ class HomeView(TemplateView):
 ##### Profile Views #####
 
 class DashboardView(LoginRequiredMixin, TemplateView):
+    """
+    Role-Based Dashboard View
+    - Redirects to advisor_dashboard.html if the user is an advisor.
+    - Redirects to client_dashboard.html if the user is a client.
+    """
     def get_template_names(self):
         if self.request.user.role == 'advisor':
             return ['bankapp/advisor_dashboard.html']
+        elif self.request.user.role == 'client':
+            return ['bankapp/client_dashboard.html']
         else:
+            # Default to client dashboard if role is undefined
             return ['bankapp/client_dashboard.html']
 
 # Project Overview View
@@ -145,4 +159,70 @@ class LoanPredictionView(View):
         else:
             messages.error(request, "Prediction failed. Please check the input data.")
             return render(request, self.template_name)
+
+########################################### Messages ############################################################
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import get_user_model
+from django.views.generic import ListView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Conversation, Message
+
+User = get_user_model()
+
+class MessageListView(LoginRequiredMixin, ListView):
+    model = Conversation
+    template_name = 'bankapp/messages_list.html'
+    context_object_name = 'conversations'
+
+    def get_queryset(self):
+        # Check user role and return conversations accordingly
+        if self.request.user.role == 'client':
+            return Conversation.objects.filter(client=self.request.user)
+        elif self.request.user.role == 'advisor':
+            return Conversation.objects.filter(advisor=self.request.user)
+        return Conversation.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        active_conversation = None
+        
+        # Get conversation details if a conversation is selected
+        if 'pk' in self.kwargs:
+            active_conversation = get_object_or_404(Conversation, pk=self.kwargs['pk'])
+        
+        context['active_conversation'] = active_conversation
+        context['user_role'] = self.request.user.role
+        
+        # Determine URL base for message sending
+        if self.request.user.role == 'client':
+            context['send_message_url'] = 'client_message_create'
+        elif self.request.user.role == 'advisor':
+            context['send_message_url'] = 'advisor_message_create'
+        
+        return context
+
+class MessageCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        # Get the conversation
+        conversation = get_object_or_404(Conversation, pk=pk)
+        
+        # Check if the user is part of the conversation
+        if (conversation.client == request.user) or (conversation.advisor == request.user):
+            content = request.POST.get('content')
+            if content:
+                # Create a new message
+                Message.objects.create(
+                    conversation=conversation,
+                    sender=request.user,
+                    content=content
+                )
+        
+        # Redirect back to the conversation detail view
+        if request.user.role == 'client':
+            return redirect('client_message_detail', pk=pk)
+        else:
+            return redirect('advisor_message_detail', pk=pk)
+
+        
+
 

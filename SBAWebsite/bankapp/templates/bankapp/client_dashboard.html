@@ -27,7 +27,7 @@
                 <i data-lucide="file-text" class="h-5 w-5"></i>
                 <span class="mx-4">My Loans</span>
             </a>
-            <a href="/client/messages"
+            <a href="{% url 'client_messages_list' %}" 
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="message-square" class="h-5 w-5"></i>
                 <span class="mx-4">Messages</span>
@@ -52,6 +52,15 @@
                     <span class="text-sm text-gray-600">Welcome back,</span>
                     <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
                 </div>
+            </div>
+            <div class="mt-6 bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-900">Your Advisor:</h2>
+                {% if user.advisor_pairing %}
+                    <p class="text-gray-600">{{ user.advisor_pairing.advisor.username }}</p>
+                    <p class="text-gray-500">{{ user.advisor_pairing.advisor.email }}</p>
+                {% else %}
+                    <p class="text-gray-500">No advisor assigned yet.</p>
+                {% endif %}
             </div>
         </div>
 

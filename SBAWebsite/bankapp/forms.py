@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User
+from .models import User, Message
 from django.contrib.auth import authenticate
 
 #Connexion and authentification
@@ -65,3 +65,19 @@ class CustomLoginForm(AuthenticationForm):
                 self.confirm_login_allowed(self.user_cache)
 
         return self.cleaned_data
+    
+
+    ##############Messages#####
+
+
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ['content']
+        widgets = {
+            'content': forms.TextInput(attrs={
+                'class': 'appearance-none rounded-full border border-gray-300 px-4 py-2 w-full focus:outline-none focus:border-blue-500',
+                'placeholder': 'Type a message...'
+            }),
+        }

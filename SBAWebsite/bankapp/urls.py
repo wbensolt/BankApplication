@@ -1,6 +1,8 @@
 from django.urls import path
 
-from .views import CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView
+from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView,
+                   MessageListView, MessageCreateView
+                    )
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -20,4 +22,25 @@ urlpatterns = [
     # Role-Based Dashboards
     path('advisor/dashboard/', DashboardView.as_view(), name='advisor_dashboard'),
     path('client/dashboard/', DashboardView.as_view(), name='client_dashboard'),
+     # Message URLs
+    
+
+
+
+    path('messages/', MessageListView.as_view(), name='messages_list'),
+    path('messages/<int:pk>/', MessageListView.as_view(), name='message_detail'),
+    path('messages/<int:pk>/send/', MessageCreateView.as_view(), name='message_create'),
+
+
+        # Role-Based Messages URLs
+    # Client Messages
+    path('client/messages/', MessageListView.as_view(), name='client_messages_list'),
+    path('client/messages/<int:pk>/', MessageListView.as_view(), name='client_message_detail'),
+    path('client/messages/<int:pk>/send/', MessageCreateView.as_view(), name='client_message_create'),
+
+    # Advisor Messages
+    path('advisor/messages/', MessageListView.as_view(), name='advisor_messages_list'),
+    path('advisor/messages/<int:pk>/', MessageListView.as_view(), name='advisor_message_detail'),
+    path('advisor/messages/<int:pk>/send/', MessageCreateView.as_view(), name='advisor_message_create'),
+
 ]

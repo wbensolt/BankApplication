@@ -1,0 +1,146 @@
+{% extends "bankapp/base.html" %}
+
+{% block title %}SecureBank - Messages{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow">
+            <div class="grid grid-cols-1 md:grid-cols-3">
+                <!-- Contact List -->
+                <div class="border-r border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-medium text-gray-900">Messages</h2>
+                    </div>
+                    <div class="divide-y divide-gray-200">
+                        {% if conversations %}
+                            {% for conversation in conversations %}
+                                <a href="{% if user_role == 'client' %}
+                                           {% url 'client_message_detail' conversation.id %}
+                                           {% else %}
+                                           {% url 'advisor_message_detail' conversation.id %}
+                                           {% endif %}"
+                                   class="block px-6 py-4 hover:bg-gray-50 cursor-pointer
+                                          {% if active_conversation and active_conversation.id == conversation.id %}bg-blue-50{% endif %}">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <i data-lucide="user" class="h-6 w-6 text-blue-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-sm font-medium text-gray-900">
+                                                    {% if user_role == 'client' %}
+                                                        {{ conversation.advisor.email }}
+                                                    {% else %}
+                                                        {{ conversation.client.email }}
+                                                    {% endif %}
+                                                </h3>
+                                                <p class="text-xs text-gray-500">{{ conversation.created_at|timesince }} ago</p>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">Conversation Details</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="px-6 py-4">
+                                <p class="text-sm text-gray-500">No conversations yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Chat Area -->
+                <div class="col-span-2">
+                    <div class="h-full flex flex-col">
+                        <!-- Chat Header -->
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            {% if active_conversation %}
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <i data-lucide="user" class="h-6 w-6 text-blue-600"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="text-sm font-medium text-gray-900">
+                                            {% if user_role == 'client' %}
+                                                {{ active_conversation.advisor.email }}
+                                            {% else %}
+                                                {{ active_conversation.client.email }}
+                                            {% endif %}
+                                        </h3>
+                                        <p class="text-xs text-gray-500">Chatting now</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <h3 class="text-sm text-gray-500">Select a conversation to view messages.</h3>
+                            {% endif %}
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="flex-1 p-6 overflow-y-auto">
+                            {% if active_conversation %}
+                                {% for message in active_conversation.messages.all %}
+                                    {% if message.sender == user %}
+                                        <!-- Sent Message -->
+                                        <div class="flex items-start justify-end mb-4">
+                                            <div class="mr-3">
+                                                <div class="bg-blue-600 rounded-lg px-4 py-2 max-w-md text-white">
+                                                    <p class="text-sm">{{ message.content }}</p>
+                                                </div>
+                                                <p class="text-xs text-gray-500 mt-1 text-right">{{ message.timestamp|date:"H:i" }}</p>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Received Message -->
+                                        <div class="flex items-start mb-4">
+                                            <div class="flex-shrink-0">
+                                                <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                    <i data-lucide="user" class="h-5 w-5 text-blue-600"></i>
+                                                </div>
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-md">
+                                                    <p class="text-sm text-gray-900">{{ message.content }}</p>
+                                                </div>
+                                                <p class="text-xs text-gray-500 mt-1">{{ message.timestamp|date:"H:i" }}</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-sm text-gray-500">No messages yet.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            {% if active_conversation %}
+                                <form method="post" action="{% if user_role == 'client' %}
+                                                               {% url 'client_message_create' active_conversation.id %}
+                                                               {% else %}
+                                                               {% url 'advisor_message_create' active_conversation.id %}
+                                                               {% endif %}">
+                                    {% csrf_token %}
+                                    <div class="flex items-center">
+                                        <input type="text" name="content" placeholder="Type a message..."
+                                            class="flex-1 mx-4 rounded-full border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500">
+                                        <button type="submit" class="bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700">
+                                            <i data-lucide="send" class="h-5 w-5"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <p class="text-sm text-gray-500">Select a conversation to send messages.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
