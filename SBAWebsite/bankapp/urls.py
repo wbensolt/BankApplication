@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView,
-                   MessageListView, MessageCreateView
+                   MessageListView, MessageCreateView, MessageDetailView
                     )
 
 urlpatterns = [
@@ -33,14 +33,14 @@ urlpatterns = [
 
 
         # Role-Based Messages URLs
-    # Client Messages
+# Client Message URLs
     path('client/messages/', MessageListView.as_view(), name='client_messages_list'),
-    path('client/messages/<int:pk>/', MessageListView.as_view(), name='client_message_detail'),
+    path('client/messages/<int:pk>/', MessageDetailView.as_view(), name='client_message_detail'),
     path('client/messages/<int:pk>/send/', MessageCreateView.as_view(), name='client_message_create'),
 
-    # Advisor Messages
+    # Advisor Message URLs
     path('advisor/messages/', MessageListView.as_view(), name='advisor_messages_list'),
-    path('advisor/messages/<int:pk>/', MessageListView.as_view(), name='advisor_message_detail'),
+    path('advisor/messages/<int:pk>/', MessageDetailView.as_view(), name='advisor_message_detail'),
     path('advisor/messages/<int:pk>/send/', MessageCreateView.as_view(), name='advisor_message_create'),
 
 ]
