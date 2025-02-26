@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "bankapp",
     "tailwind",
     "theme",
+    "channels",
     #"django_browser_reload",  
 
     #Base Django Apps
@@ -149,3 +150,12 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# Redis Channel Layer Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],  # Redis server
+        },
+    },
+}

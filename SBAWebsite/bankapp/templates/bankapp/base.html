@@ -13,43 +13,50 @@
 <body>
     <div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col justify-between">
         <!-- Navigation Bar -->
-        <nav class="bg-white shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <i data-lucide="building-2" class="h-8 w-8 text-blue-600"></i>
-                        <span class="ml-2 text-xl font-semibold text-gray-900">SecureBank</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                            Home
-                        </a>
-                        <!-- Check if User is Authenticated -->
-                        {% if user.is_authenticated %}
-                            <!-- Show Logout and Dashboard -->
-                            <a href="{% url 'dashboard' %}" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                                <i data-lucide="layout-dashboard" class="h-4 w-4 mr-1"></i>
-                                Dashboard
-                            </a>
-                            <a href="{% url 'logout' %}" class="flex items-center bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium">
-                                <i data-lucide="log-out" class="h-4 w-4 mr-1"></i>
-                                Logout
-                            </a>
-                        {% else %}
-                            <!-- Show Login and Register -->
-                            <a href="{% url 'login' %}" class="flex items-center text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                                <i data-lucide="log-in" class="h-4 w-4 mr-1"></i>
-                                Login
-                            </a>
-                            <a href="{% url 'register' %}" class="flex items-center bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
-                                <i data-lucide="user-plus" class="h-4 w-4 mr-1"></i>
-                                Register
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
+<nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center">
+                <i data-lucide="building-2" class="h-8 w-8 text-blue-600"></i>
+                <span class="ml-2 text-xl font-semibold text-gray-900">SecureBank</span>
             </div>
-        </nav>
+            <div class="flex items-center space-x-4">
+                <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                    Home
+                </a>
+                <!-- Check if User is Authenticated -->
+                {% if user.is_authenticated %}
+                    <!-- Role-Based Dashboard Link -->
+                    {% if user.role == 'advisor' %}
+                        <a href="{% url 'dashboard' %}?role=advisor" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                            <i data-lucide="layout-dashboard" class="h-4 w-4 mr-1"></i>
+                            Advisor Dashboard
+                        </a>
+                    {% elif user.role == 'client' %}
+                        <a href="{% url 'dashboard' %}?role=client" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                            <i data-lucide="layout-dashboard" class="h-4 w-4 mr-1"></i>
+                            Client Dashboard
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="flex items-center bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium">
+                        <i data-lucide="log-out" class="h-4 w-4 mr-1"></i>
+                        Logout
+                    </a>
+                {% else %}
+                    <!-- Show Login and Register -->
+                    <a href="{% url 'login' %}" class="flex items-center text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i data-lucide="log-in" class="h-4 w-4 mr-1"></i>
+                        Login
+                    </a>
+                    <a href="{% url 'register' %}" class="flex items-center bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">
+                        <i data-lucide="user-plus" class="h-4 w-4 mr-1"></i>
+                        Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
 <!-- Flash Messages -->
 {% if messages %}
     <div class="fixed top-4 right-4 w-full max-w-sm">
