@@ -6,13 +6,27 @@
 <div class="flex min-h-screen">
     <!-- Left Half: Background Image -->
     <div class="hidden md:block w-1/2 relative">
-        <img src="https://c4.wallpaperflare.com/wallpaper/30/795/678/high-definition-nature-for-widescreen-1920x1200-wallpaper-preview.jpg" 
-             alt="SecureBank" class="absolute inset-0 w-full h-full object-cover opacity-80">
-        <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent"></div>
+        <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&q=80&w=2000" 
+             alt="SecureBank" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-black/50"></div>
         <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center text-white px-4">
-                <h2 class="text-4xl font-extrabold mb-4">Welcome to SecureBank</h2>
-                <p class="text-lg">Secure, Efficient, and Hassle-Free Banking</p>
+            <div class="text-center text-white px-8 max-w-lg">
+                <h2 class="text-4xl font-extrabold mb-6">Welcome Back</h2>
+                <p class="text-xl leading-relaxed">Access your secure banking dashboard and manage your finances with confidence.</p>
+                <div class="mt-8 flex justify-center space-x-4">
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="shield-check" class="h-8 w-8 text-white"></i>
+                        <p class="mt-2 text-sm font-medium">Bank-grade Security</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="clock" class="h-8 w-8 text-white"></i>
+                        <p class="mt-2 text-sm font-medium">24/7 Access</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="headphones" class="h-8 w-8 text-white"></i>
+                        <p class="mt-2 text-sm font-medium">Expert Support</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -22,18 +36,28 @@
         <div class="max-w-md w-full space-y-8">
             <div>
                 <div class="flex justify-center">
-                    <i data-lucide="log-in" class="h-12 w-12 text-blue-600"></i>
+                    <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i data-lucide="log-in" class="h-8 w-8 text-blue-600"></i>
+                    </div>
                 </div>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Login to your account
+                    Sign in to your account
                 </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Access your secure banking dashboard
+                </p>
             </div>
 
             <!-- Display Django Messages -->
             {% if messages %}
             <div>
                 {% for message in messages %}
-                <div class="mb-4 p-2 text-white rounded-md {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                <div class="mb-4 p-3 text-white rounded-md flex items-center {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                    {% if message.tags == 'success' %}
+                    <i data-lucide="check-circle" class="h-5 w-5 mr-2"></i>
+                    {% else %}
+                    <i data-lucide="alert-circle" class="h-5 w-5 mr-2"></i>
+                    {% endif %}
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -42,8 +66,12 @@
 
             <!-- Display Form Errors -->
             {% if form.errors %}
-            <div class="mb-4 p-2 text-white rounded-md bg-red-500">
-                <ul class="list-disc list-inside">
+            <div class="mb-4 p-3 text-white rounded-md bg-red-500">
+                <div class="flex items-center mb-2">
+                    <i data-lucide="alert-triangle" class="h-5 w-5 mr-2"></i>
+                    <span class="font-medium">Please correct the following errors:</span>
+                </div>
+                <ul class="list-disc list-inside pl-2">
                     {% for field, errors in form.errors.items %}
                         {% for error in errors %}
                             <li>{{ error }}</li>
@@ -55,38 +83,60 @@
 
             <form class="mt-8 space-y-6" method="POST" action="/login/">
                 {% csrf_token %}
-                <div class="rounded-md shadow-sm -space-y-px">
+                <div class="space-y-4">
                     <!-- Username -->
                     <div>
-                        <label for="username" class="sr-only">Username</label>
-                        <input type="text" name="username" id="username" placeholder="Username" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            value="{{ form.username.value|default:'' }}">
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="username" id="username" placeholder="Enter your username" required
+                                class="pl-10 appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                value="{{ form.username.value|default:'' }}">
+                        </div>
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label for="password" class="sr-only">Password</label>
-                        <input type="password" name="password" id="password" placeholder="Password" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="password" name="password" id="password" placeholder="Enter your password" required
+                                class="pl-10 appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
                     </div>
                 </div>
 
                 <div>
                     <button type="submit"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                             <i data-lucide="log-in" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i>
                         </span>
-                        Login
+                        Sign in
                     </button>
                 </div>
             </form>
 
-            <p class="text-center text-gray-600">
-                Don't have an account? 
-                <a href="{% url 'register' %}" class="text-blue-600 hover:underline">Register</a>
-            </p>
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-gray-50 text-gray-500">Don't have an account?</span>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <a href="{% url 'register' %}" class="w-full flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                        <i data-lucide="user-plus" class="h-5 w-5 mr-2 text-gray-500"></i>
+                        Create a new account
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

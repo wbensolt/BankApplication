@@ -7,92 +7,270 @@
 <div class="relative h-[600px] overflow-hidden">
     <div class="swiper hero-swiper h-full">
         <div class="swiper-wrapper">
-            <!-- Slide 1 -->
-            <div class="swiper-slide">
-                <div class="relative h-full">
-                    <img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?auto=format&fit=crop&q=80&w=2000" alt="Banking Made Simple" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div class="text-center text-white">
-                                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
-                                    <span class="block">Banking Made Simple</span>
-                                    <span class="block text-blue-400">Secure and Efficient</span>
-                                </h1>
-                                <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                    Experience hassle-free banking with our digital platform. Apply for loans, track your applications, and communicate with your personal banking advisor - all in one place.
-                                </p>
-                                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-                                    <div class="rounded-md shadow">
-                                        <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
-                                            Get Started
-                                            <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
-                                        </a>
+            {% if user.is_authenticated %}
+                {% if user.role == 'client' %}
+                    <!-- Client Slide 1 -->
+                    <div class="swiper-slide">
+                        <div class="relative h-full">
+                            <img src="https://images.unsplash.com/photo-1579621970795-87facc2f976d?auto=format&fit=crop&q=80&w=2000" alt="Check Your Messages" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div class="text-center text-white">
+                                        <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                            <span class="block">Your Messages</span>
+                                            <span class="block text-blue-400">Stay Connected</span>
+                                        </h1>
+                                        <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                            Check your latest messages from your personal banking advisor. Stay updated on your account and loan applications.
+                                        </p>
+                                        <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                            <div class="rounded-md shadow">
+                                                <a href="{% url 'client_messages_list' %}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                    View Messages
+                                                    <i data-lucide="mail" class="ml-2 h-5 w-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Slide 2 -->
-            <div class="swiper-slide">
-                <div class="relative h-full">
-                    <img src="https://images.unsplash.com/photo-1591696205602-2f950c417cb9?auto=format&fit=crop&q=80&w=2000" alt="Personal Loan Solutions" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div class="text-center text-white">
-                                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
-                                    <span class="block">Personal Loan Solutions</span>
-                                    <span class="block text-blue-400">Tailored for You</span>
-                                </h1>
-                                <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                    Get personalized loan options with competitive rates. Our banking advisors are here to help you make the right choice for your financial future.
-                                </p>
-                                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-                                    <div class="rounded-md shadow">
-                                        <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
-                                            Get Started
-                                            <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
-                                        </a>
+                    <!-- Client Slide 2 -->
+                    <div class="swiper-slide">
+                        <div class="relative h-full">
+                            <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=2000" alt="Your Loans" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div class="text-center text-white">
+                                        <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                            <span class="block">Your Loan Status</span>
+                                            <span class="block text-blue-400">Real-time Updates</span>
+                                        </h1>
+                                        <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                            Track the status of your loan applications in real-time. Get instant updates on approvals and next steps.
+                                        </p>
+                                        <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                            <div class="rounded-md shadow">
+                                                <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                    View Loans
+                                                    <i data-lucide="credit-card" class="ml-2 h-5 w-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Slide 3 -->
-            <div class="swiper-slide">
-                <div class="relative h-full">
-                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2000" alt="Track Your Progress" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div class="text-center text-white">
-                                <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
-                                    <span class="block">Track Your Progress</span>
-                                    <span class="block text-blue-400">Real-time Updates</span>
-                                </h1>
-                                <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                    Stay informed with real-time updates on your loan application. Monitor every step of the process through our intuitive dashboard.
-                                </p>
-                                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-                                    <div class="rounded-md shadow">
-                                        <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
-                                            Get Started
-                                            <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
-                                        </a>
+                    <!-- Client Slide 3 -->
+                    <div class="swiper-slide">
+                        <div class="relative h-full">
+                            <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=2000" alt="Bank News" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div class="text-center text-white">
+                                        <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                            <span class="block">Latest Bank News</span>
+                                            <span class="block text-blue-400">Stay Informed</span>
+                                        </h1>
+                                        <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                            Stay up to date with the latest news, promotions, and financial tips from SecureBank.
+                                        </p>
+                                        <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                            <div class="rounded-md shadow">
+                                                <a href="{% url 'client_news_list' %}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                    View News
+                                                    <i data-lucide="newspaper" class="ml-2 h-5 w-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% elif user.role == 'advisor' %}
+                    <!-- Advisor Slide 1 -->
+                    <div class="swiper-slide">
+                        <div class="relative h-full">
+                            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=2000" alt="Client Messages" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div class="text-center text-white">
+                                        <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                            <span class="block">Client Messages</span>
+                                            <span class="block text-blue-400">Stay Connected</span>
+                                        </h1>
+                                        <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                            Check and respond to your client messages. Provide timely support and guidance for their financial needs.
+                                        </p>
+                                        <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                            <div class="rounded-md shadow">
+                                                <a href="{% url 'advisor_messages_list' %}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                    View Messages
+                                                    <i data-lucide="mail" class="ml-2 h-5 w-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advisor Slide 2 -->
+                    <div class="swiper-slide">
+                        <div class="relative h-full">
+                            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=2000" alt="Client Applications" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div class="text-center text-white">
+                                        <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                            <span class="block">Client Applications</span>
+                                            <span class="block text-blue-400">Manage Efficiently</span>
+                                        </h1>
+                                        <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                            Review and process client loan applications. Provide personalized financial solutions for your clients.
+                                        </p>
+                                        <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                            <div class="rounded-md shadow">
+                                                <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                    View Applications
+                                                    <i data-lucide="file-text" class="ml-2 h-5 w-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advisor Slide 3 -->
+                    <div class="swiper-slide">
+                        <div class="relative h-full">
+                            <img src="https://images.unsplash.com/photo-1579532536935-619928decd08?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Bank News" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div class="text-center text-white">
+                                        <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                            <span class="block">Manage Bank News</span>
+                                            <span class="block text-blue-400">Keep Clients Informed</span>
+                                        </h1>
+                                        <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                            Create and manage news articles to keep clients informed about the latest bank updates and financial tips.
+                                        </p>
+                                        <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                            <div class="rounded-md shadow">
+                                                <a href="{% url 'advisor_news_list' %}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                    Manage News
+                                                    <i data-lucide="newspaper" class="ml-2 h-5 w-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <!-- Slide 1 for unauthenticated users -->
+                <div class="swiper-slide">
+                    <div class="relative h-full">
+                        <img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?auto=format&fit=crop&q=80&w=2000" alt="Banking Made Simple" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <div class="text-center text-white">
+                                    <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                        <span class="block">Banking Made Simple</span>
+                                        <span class="block text-blue-400">Secure and Efficient</span>
+                                    </h1>
+                                    <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                        Experience hassle-free banking with our digital platform. Apply for loans, track your applications, and communicate with your personal banking advisor - all in one place.
+                                    </p>
+                                    <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                        <div class="rounded-md shadow">
+                                            <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                Get Started
+                                                <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Slide 2 for unauthenticated users -->
+                <div class="swiper-slide">
+                    <div class="relative h-full">
+                        <img src="https://images.unsplash.com/photo-1591696205602-2f950c417cb9?auto=format&fit=crop&q=80&w=2000" alt="Personal Loan Solutions" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <div class="text-center text-white">
+                                    <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                        <span class="block">Personal Loan Solutions</span>
+                                        <span class="block text-blue-400">Tailored for You</span>
+                                    </h1>
+                                    <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                        Get personalized loan options with competitive rates. Our banking advisors are here to help you make the right choice for your financial future.
+                                    </p>
+                                    <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                        <div class="rounded-md shadow">
+                                            <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                Get Started
+                                                <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 for unauthenticated users -->
+                <div class="swiper-slide">
+                    <div class="relative h-full">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2000" alt="Track Your Progress" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <div class="text-center text-white">
+                                    <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+                                        <span class="block">Track Your Progress</span>
+                                        <span class="block text-blue-400">Real-time Updates</span>
+                                    </h1>
+                                    <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                        Stay informed with real-time updates on your loan application. Monitor every step of the process through our intuitive dashboard.
+                                    </p>
+                                    <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                                        <div class="rounded-md shadow">
+                                            <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
+                                                Get Started
+                                                <i data-lucide="chevron-right" class="ml-2 h-5 w-5"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Swiper Navigation -->
@@ -106,61 +284,213 @@
 <!-- Feature Cards -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
     <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
-                            <i data-lucide="log-in" class="h-6 w-6 text-blue-600"></i>
+        {% if user.is_authenticated %}
+            {% if user.role == 'client' %}
+                <!-- Client Feature Card 1 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                    <i data-lucide="mail" class="h-6 w-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Your Messages</h3>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Stay in touch with your personal banking advisor
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'client_messages_list' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                View messages <span aria-hidden="true">&rarr;</span>
+                            </a>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Easy Application</h3>
-                        <p class="mt-2 text-sm text-gray-500">
-                            Apply for loans with our streamlined digital process
-                        </p>
-                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
-                            <i data-lucide="building-2" class="h-6 w-6 text-blue-600"></i>
+                <!-- Client Feature Card 2 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                    <i data-lucide="credit-card" class="h-6 w-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Loan Applications</h3>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Track the status of your current loan applications
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                View loans <span aria-hidden="true">&rarr;</span>
+                            </a>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Personal Advisor</h3>
-                        <p class="mt-2 text-sm text-gray-500">
-                            Get dedicated support from your banking advisor
-                        </p>
-                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="px-6 py-8">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
-                            <i data-lucide="user-plus" class="h-6 w-6 text-blue-600"></i>
+                <!-- Client Feature Card 3 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                    <i data-lucide="newspaper" class="h-6 w-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Latest News</h3>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Stay informed with the latest updates from SecureBank
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'client_news_list' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                Read news <span aria-hidden="true">&rarr;</span>
+                            </a>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Track Progress</h3>
-                        <p class="mt-2 text-sm text-gray-500">
-                            Monitor your loan application status in real-time
-                        </p>
+                </div>
+            {% elif user.role == 'advisor' %}
+                <!-- Advisor Feature Card 1 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                    <i data-lucide="users" class="h-6 w-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Client Messages</h3>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Respond to client inquiries and provide support
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'advisor_messages_list' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                View messages <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advisor Feature Card 2 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                    <i data-lucide="file-text" class="h-6 w-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Loan Applications</h3>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Review and process client loan applications
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                Manage applications <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advisor Feature Card 3 -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="px-6 py-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                    <i data-lucide="edit" class="h-6 w-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Manage News</h3>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Create and edit news articles for clients
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'advisor_news_list' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                Manage news <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Unauthenticated Feature Card 1 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="px-6 py-8">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                <i data-lucide="log-in" class="h-6 w-6 text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">Easy Application</h3>
+                            <p class="mt-2 text-sm text-gray-500">
+                                Apply for loans with our streamlined digital process
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Unauthenticated Feature Card 2 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="px-6 py-8">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                <i data-lucide="building-2" class="h-6 w-6 text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">Personal Advisor</h3>
+                            <p class="mt-2 text-sm text-gray-500">
+                                Get dedicated support from your banking advisor
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unauthenticated Feature Card 3 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="px-6 py-8">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-12 w-12 bg-blue-100 rounded-md flex items-center justify-center">
+                                <i data-lucide="user-plus" class="h-6 w-6 text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">Track Progress</h3>
+                            <p class="mt-2 text-sm text-gray-500">
+                                Monitor your loan application status in real-time
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
+
 
 <script>
     const swiper = new Swiper('.hero-swiper', {

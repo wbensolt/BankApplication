@@ -57,7 +57,21 @@ class Command(BaseCommand):
                 {"title": "Loan Terms Help", "content": "Do you need help understanding the loan terms? We're here to help."},
                 {"title": "Status Inquiry", "content": "For any inquiries about your loan status, contact us through this chat or email."},
                 {"title": "Further Assistance", "content": "If you require further assistance, our team is available to help you."}
-            ]
+            ],
+
+         "Waiting and Apologies": [
+            {"title": "Patience Appreciation", "content": "Thank you for your patience. Your message is important to us. We'll be with you shortly."},
+            {"title": "Representative Response", "content": "We appreciate your patience. One of our representatives will respond as soon as possible."},
+            {"title": "Holding Confirmation", "content": "Thank you for holding. We are reviewing your request and will get back to you shortly."},
+            {"title": "Wait Apology", "content": "We apologize for the wait. Our team is currently assisting other clients and will be with you soon."},
+            {"title": "Processing Information", "content": "Thank you for waiting. We are processing your information and will provide an update shortly."},
+            {"title": "High Demand Notice", "content": "We are currently experiencing high demand. We appreciate your patience and understanding."},
+            {"title": "Delay Apology", "content": "We apologize for the delay. Your inquiry is important to us, and we are working to respond soon."},
+            {"title": "Careful Handling", "content": "Thank you for your patience. Our team is handling your request with care and will reply shortly."},
+            {"title": "Inconvenience Apology", "content": "We apologize for the inconvenience. We are working on your request and will update you soon."},
+            {"title": "Commitment to Service", "content": "Thank you for waiting. We are committed to providing you with the best service possible."}
+        ]
+
         }
 
 
