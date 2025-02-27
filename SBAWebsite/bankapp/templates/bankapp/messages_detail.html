@@ -1,98 +1,810 @@
 {% extends "bankapp/base.html" %}
 
-{% block title %}SecureBank - Chat{% endblock %}
+{% block title %}SecureBank - Messages{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex space-x-4">
-    <!-- Chat Area -->
-    <div class="flex-1 bg-white rounded-lg shadow">
-        <div class="h-full flex flex-col">
-            <div class="flex-1 p-6 overflow-y-auto">
-                {% for msg in messages %}
-                    <div class="mb-4 {% if msg.sender == user %}text-right{% endif %}">
-                        <div class="inline-block rounded-lg px-4 py-2 max-w-md {% if msg.sender == user %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-900{% endif %}">
-                            <p>{{ msg.content }}</p>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {% if msg.sender == user %}You{% else %}{{ msg.sender.email }}{% endif %}
-                            | {{ msg.timestamp|date:"H:i" }}
-                        </p>
+<style>
+    .toggle-icon.rotate-90 {
+        transform: rotate(90deg);
+    }
+    .toggle-icon.rotate-0 {
+        transform: rotate(0deg);
+    }
+    </style>
+    
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+                <!-- Contact List Sidebar -->
+                <div class="border-r border-gray-200 md:col-span-1">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <h2 class="text-lg font-medium text-gray-900">Conversations</h2>
+                        {% if user_role == 'client' %}
+                            <p class="text-xs text-gray-500 mt-1">Your banking advisor</p>
+                        {% else %}
+                            <p class="text-xs text-gray-500 mt-1">Your clients</p>
+                        {% endif %}
                     </div>
-                {% empty %}
-                    <p class="text-sm text-gray-500 text-center py-4">No messages yet. Start the conversation!</p>
-                {% endfor %}
-            </div>
+                    
+                    <!-- Search for conversations (for advisors with many clients) -->
+                    {% if user_role == 'advisor' and conversations|length > 5 %}
+                    <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="relative">
+                            <input type="text" id="search-conversations" placeholder="Search conversations..." 
+                                class="w-full rounded-md border border-gray-300 pl-9 pr-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Conversations List -->
+                    <div class="divide-y divide-gray-200 overflow-y-auto max-h-[calc(100vh-16rem)]" id="conversations-list">
+                        {% if conversations %}
+                            {% for conversation in conversations %}
+                                <a href="{% if user_role == 'client' %}
+                                           {% url 'client_message_detail' conversation.id %}
+                                           {% else %}
+                                           {% url 'advisor_message_detail' conversation.id %}
+                                           {% endif %}"
+                                   class="conversation-item block px-6 py-4 hover:bg-gray-50 cursor-pointer transition duration-150
+                                          {% if active_conversation and active_conversation.id == conversation.id %}bg-blue-50 border-l-4 border-blue-500{% endif %}"
+                                   data-name="{% if user_role == 'client' %}{{ conversation.advisor.email }}{% else %}{{ conversation.client.email }}{% endif %}">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <i data-lucide="user" class="h-6 w-6 text-blue-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <h3 class="text-sm font-medium text-gray-900">
+                                                    {% if user_role == 'client' %}
+                                                        {{ conversation.advisor.get_full_name|default:conversation.advisor.email }}
+                                                    {% else %}
+                                                        {{ conversation.client.get_full_name|default:conversation.client.email }}
+                                                    {% endif %}
+                                                </h3>
+                                                {% with last_message=conversation.messages.last %}
+                                                    {% if last_message %}
+                                                        <span class="text-xs text-gray-500">{{ last_message.timestamp|date:"M d" }}</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">
+                                                {% with last_message=conversation.messages.last %}
+                                                    {% if last_message %}
+                                                        {% if last_message.sender == user %}
+                                                            <span class="text-gray-400">You: </span>
+                                                        {% endif %}
+                                                        {{ last_message.content|truncatechars:30 }}
+                                                    {% else %}
+                                                        <span class="italic text-gray-400">No messages yet</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="px-6 py-12 text-center">
+                                <i data-lucide="message-square-off" class="h-12 w-12 text-gray-300 mx-auto mb-3"></i>
+                                <p class="text-sm text-gray-500">No conversations yet.</p>
+                                {% if user_role == 'client' %}
+                                    <p class="text-xs text-gray-400 mt-2">Your advisor will contact you soon.</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-            <!-- Message Input -->
-            <div class="px-6 py-4 border-t border-gray-200">
-                <form method="post">
-                    {% csrf_token %}
-                    <textarea id="chat-input" name="content" class="border border-gray-300 rounded-lg px-4 py-2 w-full" placeholder="Type your message here..."></textarea>
-                    <button type="submit" class="bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700">
-                        <i data-lucide="send" class="h-5 w-5"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+                <!-- Chat Area -->
+                <div class="md:col-span-2 flex flex-col h-[calc(100vh-8rem)]">
+                    {% if active_conversation %}
+                        <!-- Chat Header -->
+                        <div class="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i data-lucide="user" class="h-6 w-6 text-blue-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-sm font-medium text-gray-900">
+                                        {% if user_role == 'client' %}
+                                            {{ active_conversation.advisor.get_full_name|default:active_conversation.advisor.email }}
+                                            <span class="text-xs text-blue-600 font-normal">Banking Advisor</span>
+                                        {% else %}
+                                            {{ active_conversation.client.get_full_name|default:active_conversation.client.email }}
+                                            <span class="text-xs text-gray-500 font-normal">Client</span>
+                                        {% endif %}
+                                    </h3>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional actions -->
+                            <div class="relative">
+                                <button id="conversation-actions-btn" type="button" class="text-gray-400 hover:text-gray-600">
+                                    <i data-lucide="more-vertical" class="h-5 w-5"></i>
+                                </button>
+                                <div id="conversation-actions-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                    <a href="#" class="close-conversation block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Close conversation</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Messages Container -->
+                        <div id="messages-container" class="flex-1 p-6 overflow-y-auto bg-gray-50">
+                            {% if active_conversation.messages.all %}
+                                {% for message in active_conversation.messages.all %}
+                                    {% if message.sender == user %}
+                                        <!-- Sent Message -->
+                                        <div class="flex items-start justify-end mb-4 group">
+                                            <div class="mr-3 max-w-[80%]">
+                                                <div class="bg-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+                                                    <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
+                                                    {% if message.attachment %}
+                                                        <div class="mt-2 pt-2 border-t border-blue-500/30">
+                                                            <a href="{{ message.attachment.url }}" target="_blank" class="flex items-center text-blue-200 hover:text-white">
+                                                                <i data-lucide="paperclip" class="h-4 w-4 mr-1"></i>
+                                                                <span class="text-sm truncate">{{ message.attachment.name }}</span>
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="flex items-center justify-end mt-1 space-x-2">
+                                                    <p class="text-xs text-gray-500">{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|date:"H:i" }}</p>
+                                                    {% if message.timestamp|date:"Y-m-d" == now|date:"Y-m-d" %}
+                                                        <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Today</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Received Message -->
+                                        <div class="flex items-start mb-4 group">
+                                            <div class="flex-shrink-0 mr-2">
+                                                <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                    <i data-lucide="user" class="h-5 w-5 text-blue-600"></i>
+                                                </div>
+                                            </div>
+                                            <div class="max-w-[80%]">
+                                                <div class="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                                    <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ message.content }}</p>
+                                                    {% if message.attachment %}
+                                                        <div class="mt-2 pt-2 border-t border-gray-200">
+                                                            <a href="{{ message.attachment.url }}" target="_blank" class="flex items-center text-blue-600 hover:text-blue-800">
+                                                                <i data-lucide="paperclip" class="h-4 w-4 mr-1"></i>
+                                                                <span class="text-sm truncate">{{ message.attachment.name }}</span>
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="flex items-center mt-1 space-x-2">
+                                                    <p class="text-xs text-gray-500">{{ message.timestamp|date:"M d, Y" }} at {{ message.timestamp|date:"H:i" }}</p>
+                                                    {% if message.timestamp|date:"Y-m-d" == now|date:"Y-m-d" %}
+                                                        <span class="text-xs bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded">Today</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <!-- Empty State -->
+                                <div class="h-full flex flex-col items-center justify-center text-center p-6">
+                                    <div class="bg-blue-100 rounded-full p-4 mb-4">
+                                        <i data-lucide="message-square" class="h-8 w-8 text-blue-600"></i>
+                                    </div>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">Start the conversation</h3>
+                                    <p class="text-sm text-gray-500 max-w-md">
+                                        {% if user_role == 'client' %}
+                                            Send a message to your banking advisor to discuss your financial needs.
+                                        {% else %}
+                                            Send a message to your client to start the conversation.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
 
-    <!-- Canned Messages Sidebar -->
-    <div class="w-80 bg-gray-50 rounded-lg shadow-lg p-4">
-        <h3 class="text-lg font-semibold mb-2">Canned Messages</h3>
-        <input type="text" id="search-canned-messages" placeholder="Search messages..." class="mb-4 border border-gray-300 rounded-lg px-4 py-2 w-full">
-        <div id="canned-messages-container" class="overflow-y-auto h-96">
-            <!-- Canned messages will be loaded here -->
+                        <!-- Message Input -->
+                        <div class="px-6 py-4 border-t border-gray-200 bg-white">
+                            <form method="post" enctype="multipart/form-data" action="{% if user_role == 'client' %}
+                                                           {% url 'client_message_create' active_conversation.id %}
+                                                           {% else %}
+                                                           {% url 'advisor_message_create' active_conversation.id %}
+                                                           {% endif %}"
+                                  class="flex flex-col space-y-3" id="message-form">
+                                {% csrf_token %}
+                                <div class="flex-1">
+                                    <textarea id="chat-input" name="content" rows="2" placeholder="Type a message..." 
+                                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-blue-500 focus:border-blue-500 resize-none"></textarea>
+                                </div>
+                                
+                                <!-- Attachment Preview Area -->
+                                <div id="attachment-preview" class="hidden">
+                                    <div class="flex items-center p-2 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div class="flex-shrink-0 mr-2">
+                                            <div id="attachment-icon" class="h-8 w-8 flex items-center justify-center bg-gray-100 rounded">
+                                                <i data-lucide="file" class="h-5 w-5 text-gray-500"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p id="attachment-name" class="text-sm font-medium text-gray-900 truncate"></p>
+                                            <p id="attachment-size" class="text-xs text-gray-500"></p>
+                                        </div>
+                                        <button type="button" id="remove-attachment" class="text-gray-400 hover:text-red-500">
+                                            <i data-lucide="x" class="h-5 w-5"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <input type="file" id="attachment-input" name="attachment" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+                                        <button type="button" id="attachment-btn" class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100">
+                                            <i data-lucide="paperclip" class="h-5 w-5"></i>
+                                        </button>
+                                    </div>
+                                    <button type="submit" id="send-message-btn" class="bg-blue-600 text-white rounded-full p-3 hover:bg-blue-700 transition-colors">
+                                        <i data-lucide="send" class="h-5 w-5"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% else %}
+                        <!-- No Active Conversation State -->
+                        <div class="h-full flex flex-col items-center justify-center text-center p-6 bg-gray-50">
+                            <div class="bg-blue-100 rounded-full p-6 mb-4">
+                                <i data-lucide="message-square" class="h-12 w-12 text-blue-600"></i>
+                            </div>
+                            <h3 class="text-xl font-medium text-gray-900 mb-2">Your Messages</h3>
+                            <p class="text-sm text-gray-500 max-w-md mb-6">
+                                {% if user_role == 'client' %}
+                                    Select a conversation to view your messages with your banking advisor.
+                                {% else %}
+                                    Select a client conversation from the sidebar to view and respond to messages.
+                                {% endif %}
+                            </p>
+                            {% if conversations %}
+                                <p class="text-sm text-gray-500">Select a conversation from the sidebar to get started.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Canned Messages Sidebar (Visible for Advisors Only) -->
+                {% if active_conversation and user_role == 'advisor' %}
+                <div class="hidden lg:block lg:col-span-1 border-l border-gray-200 bg-white">
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-md font-semibold text-gray-900">Quick Responses</h3>
+                        <p class="text-xs text-gray-500 mt-1">Pre-written messages for common inquiries</p>
+                    </div>
+                    
+                    <!-- Search for canned messages -->
+                    <div class="px-4 py-3 border-b border-gray-200">
+                        <div class="relative">
+                            <input type="text" id="search-canned-messages" placeholder="Search responses..." 
+                                class="w-full rounded-md border border-gray-300 pl-9 pr-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Links for Open All and Close All -->
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                        <a href="#" id="open-all-categories" class="text-sm text-blue-600 hover:text-blue-800 mr-4">Open All</a>
+                        <a href="#" id="close-all-categories" class="text-sm text-blue-600 hover:text-blue-800">Close All</a>
+                    </div>
+                    <!-- Canned Messages Container -->
+                    <div id="canned-messages-container" class="overflow-y-auto h-[calc(100vh-16rem)] p-4 space-y-4">
+                        <!-- Canned messages will be loaded here -->
+                        <div class="flex items-center justify-center h-32">
+                            <div class="text-center">
+                                <i data-lucide="loader" class="h-8 w-8 text-blue-500 mx-auto animate-spin mb-2"></i>
+                                <p class="text-sm text-gray-500">Loading quick responses...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- JavaScript to Load and Handle Canned Messages -->
 <script>
-    // Function to load canned messages by category
-    function loadCannedMessages(query = '') {
-        fetch(`/advisor/messages/canned/?query=${query}`)
-        .then(response => response.json())
+// Function to scroll to the bottom of the messages container
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// Function to load all canned messages and handle search
+function loadCannedMessages() {
+    const conversationId = "{{ active_conversation.id }}";
+    if (!conversationId) {
+        console.error("No active conversation ID found.");
+        return;
+    }
+    
+    const url = `/advisor/messages/${conversationId}/canned/`;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
         .then(data => {
             let container = document.getElementById('canned-messages-container');
             container.innerHTML = '';
-            if (data.canned_messages) {
+            
+            if (data.canned_messages && data.canned_messages.length > 0) {
+                // Group messages by category
                 data.canned_messages.forEach(category => {
+                    // Create category section
+                    let categorySection = document.createElement('div');
+                    categorySection.className = "mb-4";
+
+                    // Create category header with toggle icon
+                    let categoryHeader = document.createElement('div');
+                    categoryHeader.className = "flex items-center justify-between mb-2 cursor-pointer";
+                    categoryHeader.setAttribute('data-category', category.category);
+                    categoryHeader.addEventListener('click', function() {
+                        toggleCategoryMessages(this);
+                    });
+
+                    // Chevron icon for toggle
+                    let toggleIcon = document.createElement('span');
+                    toggleIcon.className = "toggle-icon h-4 w-4 inline-block transform transition-transform rotate-90 mr-2";
+                    toggleIcon.innerHTML = '<i data-lucide="chevron-right" class="h-4 w-4"></i>';
+                    categoryHeader.appendChild(toggleIcon);
+
                     // Category title
                     let categoryTitle = document.createElement('h4');
                     categoryTitle.textContent = category.category;
-                    categoryTitle.className = "text-md font-semibold mt-4";
-                    container.appendChild(categoryTitle);
+                    categoryTitle.className = "text-sm font-medium text-gray-700";
+                    categoryHeader.appendChild(categoryTitle);
 
-                    // List of messages in this category
+                    categorySection.appendChild(categoryHeader);
+
+                    // Create messages for this category
+                    let messagesList = document.createElement('div');
+                    messagesList.className = "category-messages space-y-2 pl-7";
+                    messagesList.style.display = "none"; // Default to hidden
+
                     category.messages.forEach(msg => {
                         let messageDiv = document.createElement('div');
-                        messageDiv.className = "bg-white border border-gray-200 rounded-lg p-2 my-2 cursor-pointer hover:bg-blue-100";
-                        messageDiv.textContent = msg.title;
-                        messageDiv.setAttribute('data-content', msg.content);
+                        messageDiv.className = "canned-message bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-blue-50 transition-colors";
+                        
+                        let titleElement = document.createElement('div');
+                        titleElement.className = "text-sm font-medium text-gray-900 mb-1";
+                        titleElement.textContent = msg.title;
+                        
+                        let contentElement = document.createElement('div');
+                        contentElement.className = "text-xs text-gray-600";
+                        contentElement.textContent = msg.content.length > 100 ? msg.content.substring(0, 100) + '...' : msg.content;
+                        
+                        messageDiv.appendChild(titleElement);
+                        messageDiv.appendChild(contentElement);
+                        
+                        messageDiv.setAttribute('data-title', msg.title.toLowerCase());
+                        messageDiv.setAttribute('data-content', msg.content.toLowerCase());
+                        messageDiv.setAttribute('data-fulltext', (msg.title + ' ' + msg.content).toLowerCase());
 
-                        // On click, copy the content to the chat input box
                         messageDiv.addEventListener('click', function() {
                             let chatInput = document.getElementById('chat-input');
-                            chatInput.value = this.getAttribute('data-content');
+                            chatInput.value = msg.content;
                             chatInput.focus();
+                            
+                            // Add visual feedback
+                            this.classList.add('bg-blue-100');
+                            setTimeout(() => {
+                                this.classList.remove('bg-blue-100');
+                            }, 300);
                         });
 
-                        container.appendChild(messageDiv);
+                        messagesList.appendChild(messageDiv);
                     });
+
+                    categorySection.appendChild(messagesList);
+                    container.appendChild(categorySection);
                 });
+
+                // Initialize Lucide icons for dynamically added elements
+                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                    lucide.createIcons();
+                }
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-lucide="message-square-off" class="h-8 w-8 text-gray-300 mx-auto mb-2"></i>
+                        <p class="text-sm text-gray-500">No quick responses available.</p>
+                    </div>
+                `;
+                
+                // Initialize Lucide icons for empty state
+                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                    lucide.createIcons();
+                }
+            }
+        })
+        .catch(error => {
+            console.error("There was an error with the fetch request:", error);
+            let container = document.getElementById('canned-messages-container');
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i data-lucide="alert-circle" class="h-8 w-8 text-red-400 mx-auto mb-2"></i>
+                    <p class="text-sm text-gray-500">Failed to load quick responses.</p>
+                    <button id="retry-load-canned" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Retry</button>
+                </div>
+            `;
+            
+            // Add retry button functionality
+            document.getElementById('retry-load-canned')?.addEventListener('click', loadCannedMessages);
+            
+            // Initialize Lucide icons for error state
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
             }
         });
+}
+
+// Function to toggle visibility of a category's messages
+function toggleCategoryMessages(categoryHeader) {
+    const messagesList = categoryHeader.nextElementSibling;
+    if (messagesList.style.display === "none") {
+        messagesList.style.display = "block";
+        categoryHeader.querySelector('.toggle-icon').classList.replace('rotate-90', 'rotate-0');
+    } else {
+        messagesList.style.display = "none";
+        categoryHeader.querySelector('.toggle-icon').classList.replace('rotate-0', 'rotate-90');
     }
+}
 
-    // Load all canned messages on page load
-    document.addEventListener('DOMContentLoaded', function() {
+// Function to open all categories
+function openAllCategories() {
+    document.querySelectorAll('.category-messages').forEach(messagesList => {
+        messagesList.style.display = "block";
+    });
+    document.querySelectorAll('.toggle-icon').forEach(icon => {
+        icon.classList.replace('rotate-90', 'rotate-0');
+    });
+}
+
+// Function to close all categories
+function closeAllCategories() {
+    document.querySelectorAll('.category-messages').forEach(messagesList => {
+        messagesList.style.display = "none";
+    });
+    document.querySelectorAll('.toggle-icon').forEach(icon => {
+        icon.classList.replace('rotate-0', 'rotate-90');
+    });
+}
+
+// Attach event listeners for Open All and Close All links
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('open-all-categories').addEventListener('click', function(e) {
+        e.preventDefault();
+        openAllCategories();
+    });
+
+    document.getElementById('close-all-categories').addEventListener('click', function(e) {
+        e.preventDefault();
+        closeAllCategories();
+    });
+});
+
+
+// Debounce function to limit search frequency
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// Enhanced client-side search functionality for canned messages
+function searchCannedMessages() {
+    let query = document.getElementById('search-canned-messages').value.toLowerCase();
+    let messages = document.querySelectorAll('.canned-message');
+    let hasResults = false;
+
+    messages.forEach(function(message) {
+        let fullText = message.getAttribute('data-fulltext');
+
+        // Search both title and content
+        if (fullText.includes(query)) {
+            message.style.display = 'block';
+            hasResults = true;
+
+            // Highlight the matched text
+            let title = message.querySelector('.text-sm');
+            let content = message.querySelector('.text-xs');
+            
+            // Reset content first
+            title.innerHTML = message.getAttribute('data-title');
+            content.innerHTML = message.getAttribute('data-content').length > 100 
+                ? message.getAttribute('data-content').substring(0, 100) + '...' 
+                : message.getAttribute('data-content');
+            
+            if (query) {
+                // Highlight matches
+                let regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                title.innerHTML = title.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
+                content.innerHTML = content.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
+            }
+        } else {
+            message.style.display = 'none';
+        }
+    });
+    
+    // Show parent categories only if they have visible children
+    document.querySelectorAll('#canned-messages-container > div').forEach(category => {
+        let hasVisibleMessages = Array.from(category.querySelectorAll('.canned-message')).some(msg => msg.style.display !== 'none');
+        category.style.display = hasVisibleMessages ? 'block' : 'none';
+    });
+    
+    // Show no results message if needed
+    let noResultsMsg = document.getElementById('no-results-message');
+    if (!hasResults && query) {
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('div');
+            noResultsMsg.id = 'no-results-message';
+            noResultsMsg.className = 'text-center py-4';
+            noResultsMsg.innerHTML = `
+                <p class="text-sm text-gray-500">No matching quick responses found.</p>
+            `;
+            document.getElementById('canned-messages-container').appendChild(noResultsMsg);
+        }
+        noResultsMsg.style.display = 'block';
+    } else if (noResultsMsg) {
+        noResultsMsg.style.display = 'none';
+    }
+}
+
+// Search functionality for conversations (for advisors)
+function searchConversations() {
+    let query = document.getElementById('search-conversations')?.value.toLowerCase();
+    if (!query) return;
+    
+    let conversations = document.querySelectorAll('.conversation-item');
+    let hasResults = false;
+    
+    conversations.forEach(function(conversation) {
+        let name = conversation.getAttribute('data-name').toLowerCase();
+        
+        if (name.includes(query)) {
+            conversation.style.display = 'block';
+            hasResults = true;
+        } else {
+            conversation.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    let noResultsMsg = document.getElementById('no-conversations-results');
+    if (!hasResults && query) {
+        if (!noResultsMsg) {
+            noResultsMsg = document.createElement('div');
+            noResultsMsg.id = 'no-conversations-results';
+            noResultsMsg.className = 'text-center py-4';
+            noResultsMsg.innerHTML = `
+                <p class="text-sm text-gray-500">No matching conversations found.</p>
+            `;
+            document.getElementById('conversations-list').appendChild(noResultsMsg);
+        }
+        noResultsMsg.style.display = 'block';
+    } else if (noResultsMsg) {
+        noResultsMsg.style.display = 'none';
+    }
+}
+
+// Handle textarea auto-resize and enter key submission
+function setupChatInput() {
+    const textarea = document.getElementById('chat-input');
+    if (!textarea) return;
+    
+    // Auto-resize textarea
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        
+        // Limit to 5 rows max
+        const lineHeight = parseInt(window.getComputedStyle(this).lineHeight);
+        const maxHeight = lineHeight * 5;
+        if (this.scrollHeight > maxHeight) {
+            this.style.height = maxHeight + 'px';
+            this.style.overflowY = 'auto';
+        } else {
+            this.style.overflowY = 'hidden';
+        }
+    });
+    
+    // Submit on Enter (but allow Shift+Enter for new line)
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const form = document.getElementById('message-form');
+            if (form && this.value.trim()) {
+                form.submit();
+            }
+        }
+    });
+}
+
+// Handle file attachment
+function setupAttachment() {
+    const attachmentBtn = document.getElementById('attachment-btn');
+    const attachmentInput = document.getElementById('attachment-input');
+    const attachmentPreview = document.getElementById('attachment-preview');
+    const attachmentName = document.getElementById('attachment-name');
+    const attachmentSize = document.getElementById('attachment-size');
+    const attachmentIcon = document.getElementById('attachment-icon');
+    const removeAttachment = document.getElementById('remove-attachment');
+    
+    if (!attachmentBtn || !attachmentInput) return;
+    
+    // Open file picker when attachment button is clicked
+    attachmentBtn.addEventListener('click', function() {
+        attachmentInput.click();
+    });
+    
+    // Handle file selection
+    attachmentInput.addEventListener('change', function() {
+        if (this.files && this.files.length > 0) {
+            const file = this.files[0];
+            
+            // Update preview
+            attachmentName.textContent = file.name;
+            
+            // Format file size
+            const size = file.size;
+            let formattedSize;
+            if (size < 1024) {
+                formattedSize = size + ' bytes';
+            } else if (size < 1024 * 1024) {
+                formattedSize = (size / 1024).toFixed(1) + ' KB';
+            } else {
+                formattedSize = (size / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+            attachmentSize.textContent = formattedSize;
+            
+            // Set appropriate icon based on file type
+            let iconName = 'file';
+            if (file.type.startsWith('image/')) {
+                iconName = 'image';
+            } else if (file.type.includes('pdf')) {
+                iconName = 'file-text';
+            } else if (file.type.includes('word') || file.type.includes('doc')) {
+                iconName = 'file-text';
+            } else if (file.type.includes('excel') || file.type.includes('sheet')) {
+                iconName = 'file-spreadsheet';
+            }
+            
+            attachmentIcon.innerHTML = `<i data-lucide="${iconName}" class="h-5 w-5 text-gray-500"></i>`;
+            
+            // Show preview
+            attachmentPreview.classList.remove('hidden');
+            
+            // Initialize Lucide icons for the new icon
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
+        }
+    });
+    
+    // Remove attachment
+    removeAttachment.addEventListener('click', function() {
+        attachmentInput.value = '';
+        attachmentPreview.classList.add('hidden');
+    });
+}
+
+// Setup conversation actions dropdown
+function setupConversationActions() {
+    const actionsBtn = document.getElementById('conversation-actions-btn');
+    const actionsMenu = document.getElementById('conversation-actions-menu');
+    
+    if (!actionsBtn || !actionsMenu) return;
+    
+    actionsBtn.addEventListener('click', function(event) {
+        event.stopPropagation();  // Prevents the click from closing the menu
+        actionsMenu.classList.toggle('hidden');
+    });
+    
+    // Close the menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (actionsBtn && actionsMenu && !actionsBtn.contains(event.target) && !actionsMenu.contains(event.target)) {
+            actionsMenu.classList.add('hidden');
+        }
+    });
+
+    // Handle Close Conversation action
+    document.querySelectorAll('.close-conversation').forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            // Go back to the previous page if available, otherwise to the conversation list
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                // Redirect to the conversation list for the correct role
+                const userRole = "{{ user_role }}";
+                if (userRole === 'client') {
+                    window.location.href = "{% url 'client_messages_list' %}";
+                } else if (userRole === 'advisor') {
+                    window.location.href = "{% url 'advisor_messages_list' %}";
+                }
+            }
+        });
+    });
+}
+
+// Validate form before submission
+function setupFormValidation() {
+    const form = document.getElementById('message-form');
+    const chatInput = document.getElementById('chat-input');
+    const attachmentInput = document.getElementById('attachment-input');
+    const sendButton = document.getElementById('send-message-btn');
+    
+    if (!form || !chatInput || !sendButton) return;
+    
+    form.addEventListener('submit', function(event) {
+        // Check if there's content or an attachment
+        const hasContent = chatInput.value.trim().length > 0;
+        const hasAttachment = attachmentInput.files && attachmentInput.files.length > 0;
+        
+        if (!hasContent && !hasAttachment) {
+            event.preventDefault();
+            // Show alert
+            alert('Please enter a message or attach a file before sending.');
+        }
+    });
+}
+
+// Attach all event handlers and initialize components
+document.addEventListener('DOMContentLoaded', function() {
+    // Scroll to bottom of messages on page load
+    scrollToBottom();
+    
+    // Setup chat input behavior
+    setupChatInput();
+    
+    // Setup attachment handling
+    setupAttachment();
+    
+    // Setup conversation actions dropdown
+    setupConversationActions();
+    
+    // Setup form validation
+    setupFormValidation();
+    
+    // Setup canned messages search
+    const cannedMessagesSearch = document.getElementById('search-canned-messages');
+    if (cannedMessagesSearch) {
+        cannedMessagesSearch.addEventListener('input', debounce(searchCannedMessages, 300));
+    }
+    
+    // Setup conversations search
+    const conversationsSearch = document.getElementById('search-conversations');
+    if (conversationsSearch) {
+        conversationsSearch.addEventListener('input', debounce(searchConversations, 300));
+    }
+    
+    // Load canned messages if we have an active conversation
+    const conversationId = "{{ active_conversation.id }}";
+    if (conversationId && "{{ user_role }}" === 'advisor') {
         loadCannedMessages();
-    });
-
-    // Filter messages as the user types in the search box
-    document.getElementById('search-canned-messages').addEventListener('input', function() {
-        let query = this.value;
-        loadCannedMessages(query);
-    });
+    }
+});
 </script>
 {% endblock %}

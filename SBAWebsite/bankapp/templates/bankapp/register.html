@@ -6,13 +6,31 @@
 <div class="flex min-h-screen">
     <!-- Left Half: Background Image -->
     <div class="hidden md:block w-1/2 relative">
-        <img src="https://c4.wallpaperflare.com/wallpaper/30/795/678/high-definition-nature-for-widescreen-1920x1200-wallpaper-preview.jpg" 
-             alt="SecureBank" class="absolute inset-0 w-full h-full object-cover opacity-80">
-        <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent"></div>
+        <img src="https://images.unsplash.com/photo-1601597111158-2fceff292cdc?auto=format&fit=crop&q=80&w=2000" 
+             alt="SecureBank" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-black/50"></div>
         <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center text-white px-4">
-                <h2 class="text-4xl font-extrabold mb-4">Welcome to SecureBank</h2>
-                <p class="text-lg">Secure, Efficient, and Hassle-Free Banking</p>
+            <div class="text-center text-white px-8 max-w-lg">
+                <h2 class="text-4xl font-extrabold mb-6">Join SecureBank Today</h2>
+                <p class="text-xl leading-relaxed">Create your account and experience banking that puts your security and convenience first.</p>
+                <div class="mt-8 grid grid-cols-2 gap-4">
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="shield" class="h-8 w-8 text-white mx-auto"></i>
+                        <p class="mt-2 text-sm font-medium">Advanced Security</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="smartphone" class="h-8 w-8 text-white mx-auto"></i>
+                        <p class="mt-2 text-sm font-medium">Mobile Banking</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="credit-card" class="h-8 w-8 text-white mx-auto"></i>
+                        <p class="mt-2 text-sm font-medium">Easy Loans</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
+                        <i data-lucide="trending-up" class="h-8 w-8 text-white mx-auto"></i>
+                        <p class="mt-2 text-sm font-medium">Financial Growth</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -22,18 +40,28 @@
         <div class="max-w-md w-full space-y-8">
             <div>
                 <div class="flex justify-center">
-                    <i data-lucide="user-plus" class="h-12 w-12 text-blue-600"></i>
+                    <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i data-lucide="user-plus" class="h-8 w-8 text-blue-600"></i>
+                    </div>
                 </div>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
                     Create your account
                 </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Join thousands of satisfied customers
+                </p>
             </div>
 
             <!-- Display Django Messages -->
             {% if messages %}
             <div>
                 {% for message in messages %}
-                <div class="mb-4 p-2 text-white rounded-md {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                <div class="mb-4 p-3 text-white rounded-md flex items-center {% if message.tags == 'success' %}bg-green-500{% else %}bg-red-500{% endif %}">
+                    {% if message.tags == 'success' %}
+                    <i data-lucide="check-circle" class="h-5 w-5 mr-2"></i>
+                    {% else %}
+                    <i data-lucide="alert-circle" class="h-5 w-5 mr-2"></i>
+                    {% endif %}
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -42,50 +70,82 @@
 
             <form class="mt-8 space-y-6" method="POST" action="{% url 'register' %}">
                 {% csrf_token %}
-                <div class="rounded-md shadow-sm -space-y-px">
+                <div class="space-y-4">
                     <!-- Username -->
                     <div>
-                        <label for="username" class="sr-only">Username</label>
-                        <input type="text" name="username" id="username" placeholder="Username" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            value="{{ form.username.value|default:'' }}">
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="username" id="username" placeholder="Choose a username" required
+                                class="pl-10 appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                value="{{ form.username.value|default:'' }}">
+                        </div>
                         <!-- Error Message -->
                         {% for error in form.username.errors %}
-                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        <p class="mt-1 text-red-600 text-sm flex items-center">
+                            <i data-lucide="alert-circle" class="h-4 w-4 mr-1"></i>
+                            {{ error }}
+                        </p>
                         {% endfor %}
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="sr-only">Email address</label>
-                        <input type="email" name="email" id="email" placeholder="Email address" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            value="{{ form.email.value|default:'' }}">
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="email" name="email" id="email" placeholder="Enter your email address" required
+                                class="pl-10 appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                value="{{ form.email.value|default:'' }}">
+                        </div>
                         <!-- Error Message -->
                         {% for error in form.email.errors %}
-                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        <p class="mt-1 text-red-600 text-sm flex items-center">
+                            <i data-lucide="alert-circle" class="h-4 w-4 mr-1"></i>
+                            {{ error }}
+                        </p>
                         {% endfor %}
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label for="password1" class="sr-only">Password</label>
-                        <input type="password" name="password1" id="password1" placeholder="Password" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <label for="password1" class="block text-sm font-medium text-gray-700">Password</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="password" name="password1" id="password1" placeholder="Create a strong password" required
+                                class="pl-10 appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
                         <!-- Error Message -->
                         {% for error in form.password1.errors %}
-                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        <p class="mt-1 text-red-600 text-sm flex items-center">
+                            <i data-lucide="alert-circle" class="h-4 w-4 mr-1"></i>
+                            {{ error }}
+                        </p>
                         {% endfor %}
                     </div>
 
                     <!-- Confirm Password -->
                     <div>
-                        <label for="password2" class="sr-only">Confirm password</label>
-                        <input type="password" name="password2" id="password2" placeholder="Confirm password" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <label for="password2" class="block text-sm font-medium text-gray-700">Confirm password</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="check-circle" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="password" name="password2" id="password2" placeholder="Confirm your password" required
+                                class="pl-10 appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
                         <!-- Error Message -->
                         {% for error in form.password2.errors %}
-                        <p class="text-red-500 text-sm">{{ error }}</p>
+                        <p class="mt-1 text-red-600 text-sm flex items-center">
+                            <i data-lucide="alert-circle" class="h-4 w-4 mr-1"></i>
+                            {{ error }}
+                        </p>
                         {% endfor %}
                     </div>
 
@@ -95,18 +155,31 @@
 
                 <div>
                     <button type="submit"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                             <i data-lucide="user-plus" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i>
                         </span>
                         Create Account
                     </button>
-                    <p class="text-center text-gray-600">
-                        Have an account? 
-                        <a href="{% url 'login' %}" class="text-blue-600 hover:underline">Login</a>
-                    </p>
                 </div>
             </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-gray-50 text-gray-500">Already have an account?</span>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <a href="{% url 'login' %}" class="w-full flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                        <i data-lucide="log-in" class="h-5 w-5 mr-2 text-gray-500"></i>
+                        Sign in to your account
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
