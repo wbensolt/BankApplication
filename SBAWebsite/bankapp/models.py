@@ -118,11 +118,34 @@ class Message(models.Model):
     """
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(default=timezone.now)
+    attachment = models.FileField(upload_to='attachments/', blank=True, null=True)  # For file attachments
 
     def __str__(self):
         return f"Message from {self.sender} at {self.timestamp}"
+    
+
+
+
+#- Canned messages for the chat (advisor)
+
+#Canned messages categories 
+class CannedMessageCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+# Canned messages model 
+class CannedMessage(models.Model):
+    category = models.ForeignKey(CannedMessageCategory, on_delete=models.CASCADE, related_name='canned_messages')
+    title = models.CharField(max_length=100)  #"Defining the title of the  General Answers"
+    content = models.TextField()  # The predifined answers
+
+    def __str__(self):
+        return f"{self.title} ({self.category.name})"
+
     
 
 ###### News 
@@ -142,6 +165,7 @@ class NewsArticle(models.Model):
     def excerpt(self):
         return self.content[:100] + '...' if len(self.content) > 100 else self.content
 
+###### API TOKEN 
 
 class TokenModel(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

@@ -74,7 +74,7 @@ class CustomLoginForm(AuthenticationForm):
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ['content']
+        fields = ['content','attachment']
         widgets = {
             'content': forms.TextInput(attrs={
                 'class': 'appearance-none rounded-full border border-gray-300 px-4 py-2 w-full focus:outline-none focus:border-blue-500',

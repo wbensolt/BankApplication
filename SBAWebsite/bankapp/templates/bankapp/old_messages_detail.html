@@ -1,0 +1,35 @@
+{% extends "bankapp/base.html" %}
+
+{% block title %}SecureBank - Chat{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow">
+        <div class="h-full flex flex-col">
+            <div class="flex-1 p-6 overflow-y-auto">
+                {% for msg in messages %}
+                    <div class="mb-4 {% if msg.sender == user %}text-right{% endif %}">
+                        <div class="inline-block rounded-lg px-4 py-2 max-w-md {% if msg.sender == user %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-900{% endif %}">
+                            <p>{{ msg.content }}</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">{% if msg.sender == user %}You{% else %}{{ msg.sender.email }}{% endif %} | {{ msg.timestamp|date:"H:i" }}</p>
+                    </div>
+                {% empty %}
+                    <p class="text-sm text-gray-500 text-center py-4">No messages yet. Start the conversation!</p>
+                {% endfor %}
+            </div>
+
+            <!-- Message Input -->
+            <div class="px-6 py-4 border-t border-gray-200">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.content }}
+                    <button type="submit" class="bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700">
+                        <i data-lucide="send" class="h-5 w-5"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

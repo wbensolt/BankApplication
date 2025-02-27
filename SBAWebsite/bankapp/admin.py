@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, NewsArticle
+from .models import User, NewsArticle, CannedMessageCategory, CannedMessage
 
 from .models import AdvisorClientPairing
 
@@ -70,3 +70,17 @@ class NewsArticleAdmin(admin.ModelAdmin):
 
 # Register the News Model
 admin.site.register(NewsArticle)
+
+
+#### Canned Messages management 
+class CannedMessageCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+class CannedMessageAdmin(admin.ModelAdmin):
+    list_display = ('title',  'category')
+    list_filter = ('category','title')
+    search_fields = ('title', 'content')
+
+admin.site.register(CannedMessageCategory, CannedMessageCategoryAdmin)
+admin.site.register(CannedMessage, CannedMessageAdmin)

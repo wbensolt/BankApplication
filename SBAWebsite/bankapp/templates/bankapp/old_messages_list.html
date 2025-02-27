@@ -241,7 +241,7 @@
                                             <i data-lucide="paperclip" class="h-5 w-5"></i>
                                         </button>
                                     </div>
-                                    <button type="submit" id="send-message-btn" class="bg-blue-600 text-white rounded-full p-3 hover:bg-blue-700 transition-colors">
+                                    <button type="submit" class="bg-blue-600 text-white rounded-full p-3 hover:bg-blue-700 transition-colors">
                                         <i data-lucide="send" class="h-5 w-5"></i>
                                     </button>
                                 </div>
@@ -335,7 +335,6 @@ function loadCannedMessages() {
             container.innerHTML = '';
             
             if (data.canned_messages && data.canned_messages.length > 0) {
-                // Group messages by category
                 data.canned_messages.forEach(category => {
                     // Create category section
                     let categorySection = document.createElement('div');
@@ -409,11 +408,6 @@ function loadCannedMessages() {
                         <p class="text-sm text-gray-500">No quick responses available.</p>
                     </div>
                 `;
-                
-                // Initialize Lucide icons for empty state
-                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
-                    lucide.createIcons();
-                }
             }
         })
         .catch(error => {
@@ -643,67 +637,43 @@ function setupAttachment() {
     });
 }
 
-// Setup conversation actions dropdown
-function setupConversationActions() {
-    const actionsBtn = document.getElementById('conversation-actions-btn');
-    const actionsMenu = document.getElementById('conversation-actions-menu');
-    
-    if (!actionsBtn || !actionsMenu) return;
-    
-    actionsBtn.addEventListener('click', function(event) {
-        event.stopPropagation();  // Prevents the click from closing the menu
-        actionsMenu.classList.toggle('hidden');
-    });
-    
-    // Close the menu when clicking outside
-    document.addEventListener('click', function(event) {
-        if (actionsBtn && actionsMenu && !actionsBtn.contains(event.target) && !actionsMenu.contains(event.target)) {
-            actionsMenu.classList.add('hidden');
-        }
-    });
-
-    // Handle Close Conversation action
-    document.querySelectorAll('.close-conversation').forEach(item => {
-        item.addEventListener('click', function(event) {
-            event.preventDefault();
-            // Go back to the previous page if available, otherwise to the conversation list
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                // Redirect to the conversation list for the correct role
-                const userRole = "{{ user_role }}";
-                if (userRole === 'client') {
-                    window.location.href = "{% url 'client_messages_list' %}";
-                } else if (userRole === 'advisor') {
-                    window.location.href = "{% url 'advisor_messages_list' %}";
-                }
+// Toggle the dropdown menu for conversation actions
+    // Toggle the dropdown menu for conversation actions
+    document.addEventListener('DOMContentLoaded', function() {
+        const actionsBtn = document.getElementById('conversation-actions-btn');
+        const actionsMenu = document.getElementById('conversation-actions-menu');
+        
+        actionsBtn.addEventListener('click', function(event) {
+            event.stopPropagation();  // Prevents the click from closing the menu
+            actionsMenu.classList.toggle('hidden');
+        });
+        
+        // Close the menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!actionsBtn.contains(event.target) && !actionsMenu.contains(event.target)) {
+                actionsMenu.classList.add('hidden');
             }
         });
-    });
-}
-
-// Validate form before submission
-function setupFormValidation() {
-    const form = document.getElementById('message-form');
-    const chatInput = document.getElementById('chat-input');
-    const attachmentInput = document.getElementById('attachment-input');
-    const sendButton = document.getElementById('send-message-btn');
     
-    if (!form || !chatInput || !sendButton) return;
-    
-    form.addEventListener('submit', function(event) {
-        // Check if there's content or an attachment
-        const hasContent = chatInput.value.trim().length > 0;
-        const hasAttachment = attachmentInput.files && attachmentInput.files.length > 0;
-        
-        if (!hasContent && !hasAttachment) {
-            event.preventDefault();
-            // Show alert
-            alert('Please enter a message or attach a file before sending.');
-        }
+        // Handle Close Conversation action
+        document.querySelectorAll('.close-conversation').forEach(item => {
+            item.addEventListener('click', function(event) {
+                event.preventDefault();
+                // Go back to the previous page if available, otherwise to the conversation list
+                if (document.referrer) {
+                    window.history.back();
+                } else {
+                    // Redirect to the conversation list for the correct role
+                    const userRole = "{{ user_role }}";
+                    if (userRole === 'client') {
+                        window.location.href = "{% url 'client_messages_list' %}";
+                    } else if (userRole === 'advisor') {
+                        window.location.href = "{% url 'advisor_messages_list' %}";
+                    }
+                }
+            });
+        });
     });
-}
-
 // Attach all event handlers and initialize components
 document.addEventListener('DOMContentLoaded', function() {
     // Scroll to bottom of messages on page load
@@ -717,9 +687,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup conversation actions dropdown
     setupConversationActions();
-    
-    // Setup form validation
-    setupFormValidation();
     
     // Setup canned messages search
     const cannedMessagesSearch = document.getElementById('search-canned-messages');
