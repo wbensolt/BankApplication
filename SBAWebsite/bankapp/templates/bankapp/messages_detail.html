@@ -3,8 +3,9 @@
 {% block title %}SecureBank - Chat{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-white rounded-lg shadow">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex space-x-4">
+    <!-- Chat Area -->
+    <div class="flex-1 bg-white rounded-lg shadow">
         <div class="h-full flex flex-col">
             <div class="flex-1 p-6 overflow-y-auto">
                 {% for msg in messages %}
@@ -12,7 +13,10 @@
                         <div class="inline-block rounded-lg px-4 py-2 max-w-md {% if msg.sender == user %}bg-blue-600 text-white{% else %}bg-gray-100 text-gray-900{% endif %}">
                             <p>{{ msg.content }}</p>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">{% if msg.sender == user %}You{% else %}{{ msg.sender.email }}{% endif %} | {{ msg.timestamp|date:"H:i" }}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {% if msg.sender == user %}You{% else %}{{ msg.sender.email }}{% endif %}
+                            | {{ msg.timestamp|date:"H:i" }}
+                        </p>
                     </div>
                 {% empty %}
                     <p class="text-sm text-gray-500 text-center py-4">No messages yet. Start the conversation!</p>
@@ -23,7 +27,7 @@
             <div class="px-6 py-4 border-t border-gray-200">
                 <form method="post">
                     {% csrf_token %}
-                    {{ form.content }}
+                    <textarea id="chat-input" name="content" class="border border-gray-300 rounded-lg px-4 py-2 w-full" placeholder="Type your message here..."></textarea>
                     <button type="submit" class="bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700">
                         <i data-lucide="send" class="h-5 w-5"></i>
                     </button>
@@ -31,5 +35,64 @@
             </div>
         </div>
     </div>
+
+    <!-- Canned Messages Sidebar -->
+    <div class="w-80 bg-gray-50 rounded-lg shadow-lg p-4">
+        <h3 class="text-lg font-semibold mb-2">Canned Messages</h3>
+        <input type="text" id="search-canned-messages" placeholder="Search messages..." class="mb-4 border border-gray-300 rounded-lg px-4 py-2 w-full">
+        <div id="canned-messages-container" class="overflow-y-auto h-96">
+            <!-- Canned messages will be loaded here -->
+        </div>
+    </div>
 </div>
+
+<!-- JavaScript to Load and Handle Canned Messages -->
+<script>
+    // Function to load canned messages by category
+    function loadCannedMessages(query = '') {
+        fetch(`/advisor/messages/canned/?query=${query}`)
+        .then(response => response.json())
+        .then(data => {
+            let container = document.getElementById('canned-messages-container');
+            container.innerHTML = '';
+            if (data.canned_messages) {
+                data.canned_messages.forEach(category => {
+                    // Category title
+                    let categoryTitle = document.createElement('h4');
+                    categoryTitle.textContent = category.category;
+                    categoryTitle.className = "text-md font-semibold mt-4";
+                    container.appendChild(categoryTitle);
+
+                    // List of messages in this category
+                    category.messages.forEach(msg => {
+                        let messageDiv = document.createElement('div');
+                        messageDiv.className = "bg-white border border-gray-200 rounded-lg p-2 my-2 cursor-pointer hover:bg-blue-100";
+                        messageDiv.textContent = msg.title;
+                        messageDiv.setAttribute('data-content', msg.content);
+
+                        // On click, copy the content to the chat input box
+                        messageDiv.addEventListener('click', function() {
+                            let chatInput = document.getElementById('chat-input');
+                            chatInput.value = this.getAttribute('data-content');
+                            chatInput.focus();
+                        });
+
+                        container.appendChild(messageDiv);
+                    });
+                });
+            }
+        });
+    }
+
+    // Load all canned messages on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCannedMessages();
+    });
+
+    // Filter messages as the user types in the search box
+    document.getElementById('search-canned-messages').addEventListener('input', function() {
+        let query = this.value;
+        loadCannedMessages(query);
+    });
+</script>
 {% endblock %}

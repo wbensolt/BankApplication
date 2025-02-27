@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView,
-                   MessageListView, MessageCreateView, MessageDetailView, NewsListView, NewsDetailView, NewsCreateView,NewsUpdateView,NewsDeleteView
+                   MessageListView, MessageCreateView, MessageDetailView, NewsListView, NewsDetailView, NewsCreateView,NewsUpdateView,NewsDeleteView,
+                   CannedMessageListView
                     )
 
 urlpatterns = [
@@ -24,9 +25,10 @@ urlpatterns = [
     path('client/dashboard/', DashboardView.as_view(), name='client_dashboard'),
     # Message URLs
 
-    path('messages/', MessageListView.as_view(), name='messages_list'),
-    path('messages/<int:pk>/', MessageListView.as_view(), name='message_detail'),
-    path('messages/<int:pk>/send/', MessageCreateView.as_view(), name='message_create'),
+    #path('messages/', MessageListView.as_view(), name='messages_list'),
+    #path('messages/<int:pk>/', MessageListView.as_view(), name='message_detail'),
+    #path('messages/<int:pk>/send/', MessageCreateView.as_view(), name='message_create'),
+    
 
 
 # Role-Based Messages URLs
@@ -39,6 +41,8 @@ urlpatterns = [
     path('advisor/messages/', MessageListView.as_view(), name='advisor_messages_list'),
     path('advisor/messages/<int:pk>/', MessageDetailView.as_view(), name='advisor_message_detail'),
     path('advisor/messages/<int:pk>/send/', MessageCreateView.as_view(), name='advisor_message_create'),
+    path('advisor/messages/<int:pk>/canned/', CannedMessageListView.as_view(), name='advisor_canned_messages'),
+
 
 #News Urls
 

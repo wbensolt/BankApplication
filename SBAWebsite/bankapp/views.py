@@ -2,10 +2,13 @@
 # Standard Libraries
 import requests
 
+
 # Django Shortcuts and Utilities
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
+from django.db.models import Q
+from django.http import JsonResponse
 
 # Django Authentication
 from django.contrib.auth import get_user_model, authenticate, login as auth_login  # Avoid conflict with the view name
@@ -25,12 +28,12 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import AdvisorClientPairing, Conversation, AdvisorClientPairing, Conversation, Message, NewsArticle
+from .models import AdvisorClientPairing, Conversation, AdvisorClientPairing, Conversation, Message, NewsArticle, CannedMessageCategory, CannedMessage
 
 
  ##### Login and registration #####
 
-User = get_user_model()
+User = get_user_model()#
 
 #Registerview 
 class RegisterView(FormView):
@@ -274,15 +277,57 @@ class MessageDetailView(DetailView):
 # Message Create View
 class MessageCreateView(CreateView):
     model = Message
-    fields = ['content']
+    fields = ['content', 'attachment']  # Include attachment
+    template_name = 'bankapp/messages_list.html'  # Use the existing template
 
     def form_valid(self, form):
         conversation = get_object_or_404(Conversation, pk=self.kwargs['pk'])
         form.instance.conversation = conversation
         form.instance.sender = self.request.user
-        form.save()
-        return redirect(reverse('message_detail', kwargs={'pk': conversation.pk}))
 
+        # Handle attachment
+        if self.request.FILES:
+            form.instance.attachment = self.request.FILES.get('attachment')
+
+        form.save()
+        return redirect(reverse('client_message_detail' if self.request.user.role == 'client' else 'advisor_message_detail', kwargs={'pk': conversation.pk}))
+
+    
+
+
+class CannedMessageListView(View):
+    def get(self, request, pk):
+        if request.user.is_authenticated and request.user.role == 'advisor':
+            # Ensure the conversation exists and belongs to the advisor
+            try:
+                conversation = Conversation.objects.get(pk=pk, advisor=request.user)
+            except Conversation.DoesNotExist:
+                return JsonResponse({'error': 'Conversation not found or not authorized.'}, status=404)
+
+            # Load all categories with their messages for all advisors
+            categories = CannedMessageCategory.objects.prefetch_related('canned_messages').all()
+            data = []
+
+            for category in categories:
+                # Fetch all messages in each category, no advisor filtering
+                messages = category.canned_messages.all().order_by('title')
+                
+                if messages.exists():
+                    category_data = {
+                        'category': category.name,
+                        'messages': [{'id': msg.id, 'title': msg.title, 'content': msg.content} for msg in messages]
+                    }
+                    data.append(category_data)
+            
+            return JsonResponse({'canned_messages': data})
+        else:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+
+
+
+
+##### FASTAPI CONNEXION
 import threading
 import time
 from datetime import timedelta
