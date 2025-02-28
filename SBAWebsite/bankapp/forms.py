@@ -81,3 +81,23 @@ class MessageForm(forms.ModelForm):
                 'placeholder': 'Type a message...'
             }),
         }
+
+################# Predictions 
+# forms.py
+
+from django import forms
+from .models import LoanRequest
+
+class LoanRequestForm(forms.ModelForm):
+    class Meta:
+        model = LoanRequest
+        fields = [
+            'state', 'zip_code', 'bank_state', 'approval_fy', 'term',
+            'no_emp', 'new_exist', 'create_job', 'retained_job',
+            'franchise_code', 'urban_rural', 'rev_line_cr', 'low_doc',
+            'disbursement_gross', 'gr_appv', 'approval_month', 'naics_code'
+        ]
+        widgets = {
+            field: forms.TextInput(attrs={'class': 'form-input'})
+            for field in fields
+        }

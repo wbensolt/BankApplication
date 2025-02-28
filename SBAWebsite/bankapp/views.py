@@ -1,14 +1,13 @@
-
 # Standard Libraries
 import requests
-
+from datetime import datetime, timedelta
 
 # Django Shortcuts and Utilities
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
-from django.db.models import Q
-from django.http import JsonResponse
+from django.db.models import Q, Count
+from django.http import JsonResponse, Http404
 
 # Django Authentication
 from django.contrib.auth import get_user_model, authenticate, login as auth_login  # Avoid conflict with the view name
@@ -20,7 +19,7 @@ from django.views import View
 from django.views.generic import TemplateView, CreateView, FormView, ListView, DetailView, UpdateView, DeleteView
 
 # Forms and Models
-from .forms import RegisterForm, CustomLoginForm
+from .forms import RegisterForm, CustomLoginForm, MessageForm, LoanRequestForm
 from django.urls import reverse
 from django.contrib.auth import login as auth_login  # Avoid conflict with the view name
 from django.contrib.auth import get_user_model
@@ -28,7 +27,7 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
-from .models import AdvisorClientPairing, Conversation, AdvisorClientPairing, Conversation, Message, NewsArticle, CannedMessageCategory, CannedMessage
+from .models import AdvisorClientPairing, Conversation, Message, NewsArticle, CannedMessageCategory, CannedMessage, LoanRequest
 
 
  ##### Login and registration #####
@@ -138,19 +137,47 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Messages Count
+        # Common data for both roles
+        # News Articles
+        context['latest_news'] = NewsArticle.objects.all().order_by('-published_date')[:5]  # Get latest 5 news articles
+        
         if user.role == 'client':
+            # Client-specific dashboard data
             # Count messages from the assigned advisor
             conversations = Conversation.objects.filter(client=user)
-            context['messages_count'] = Message.objects.filter(conversation__in=conversations).count()
+            context['unread_messages_count'] = Message.objects.filter(conversation__in=conversations).exclude(sender=user).count()
+            
+            # Loan statistics
+            context['total_applications'] = LoanRequest.objects.filter(client=user).count()
+            context['approved_loans'] = LoanRequest.objects.filter(client=user, status='approved').count()
+            context['pending_requests'] = LoanRequest.objects.filter(client=user, status='pending').count()
+            
         elif user.role == 'advisor':
-            # Count all messages from clients assigned to this advisor
+            # Advisor-specific dashboard data
+            # Get all clients paired with this advisor
+            paired_clients = AdvisorClientPairing.objects.filter(advisor=user).values_list('client', flat=True)
+            context['active_clients_count'] = len(paired_clients)
+            
+            # Count unread messages from clients
             conversations = Conversation.objects.filter(advisor=user)
-            context['messages_count'] = Message.objects.filter(conversation__in=conversations).count()
+            context['unread_messages_count'] = Message.objects.filter(conversation__in=conversations).exclude(sender=user).count()
+            
+            # Loan statistics
+            context['pending_reviews_count'] = LoanRequest.objects.filter(client__in=paired_clients, status='pending').count()
+            
+            # Approved today
+            today = datetime.now().date()
+            context['approved_today_count'] = LoanRequest.objects.filter(
+                client__in=paired_clients, 
+                status='approved',
+                updated_at__date=today
+            ).count()
+            
+            # Recent loan applications
+            context['recent_applications'] = LoanRequest.objects.filter(
+                client__in=paired_clients
+            ).order_by('-created_at')[:10]
         
-        # News Articles
-        context['news_articles'] = NewsArticle.objects.all().order_by('-published_date')[:5]  # Get latest 5 news articles
-
         return context
 
 
@@ -462,3 +489,203 @@ class NewsDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         return self.request.user.role == 'advisor'
+    
+
+
+
+################################# predictions 
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.contrib import messages
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+import requests
+
+from .models import LoanRequest
+from .forms import LoanRequestForm
+
+### CLIENT VIEWS ###
+
+class ClientLoanRequestCreateView(LoginRequiredMixin, View):
+    template_name = 'bankapp/loan_request_form.html'
+
+    def get(self, request):
+        form = LoanRequestForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = LoanRequestForm(request.POST)
+        
+        if form.is_valid():
+            loan_request = form.save(commit=False)
+            loan_request.client = request.user
+            loan_request.status = 'draft'  # Save as draft
+            loan_request.save()
+
+            messages.success(request, "Loan request saved as draft.")
+            return redirect('client_loan_list')
+        
+        return render(request, self.template_name, {'form': form})
+
+
+class ClientLoanRequestEditView(LoginRequiredMixin, View):
+    template_name = 'bankapp/loan_request_form.html'
+
+    def get(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
+        form = LoanRequestForm(instance=loan_request)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
+        form = LoanRequestForm(request.POST, instance=loan_request)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Loan request updated successfully.")
+            return redirect('client_loan_list')
+        
+        return render(request, self.template_name, {'form': form})
+
+
+class ClientLoanRequestPredictView(LoginRequiredMixin, View):
+    template_name = 'bankapp/loan_prediction_result.html'
+
+    def post(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
+
+        # Prepare data for FastAPI
+        payload = {
+            "State": loan_request.state,
+            "Zip": loan_request.zip_code,
+            "BankState": loan_request.bank_state,
+            "ApprovalFY": loan_request.approval_fy,
+            "Term": loan_request.term,
+            "NoEmp": loan_request.no_emp,
+            "NewExist": loan_request.new_exist,
+            "CreateJob": loan_request.create_job,
+            "RetainedJob": loan_request.retained_job,
+            "FranchiseCode": loan_request.franchise_code,
+            "UrbanRural": loan_request.urban_rural,
+            "RevLineCr": loan_request.rev_line_cr,
+            "LowDoc": loan_request.low_doc,
+            "DisbursementGross": loan_request.disbursement_gross,
+            "GrAppv": loan_request.gr_appv,
+            "ApprovalMonth": loan_request.approval_month,
+            "NAICS_CODE": loan_request.naics_code,
+        }
+
+        # Send request to FastAPI
+        fastapi_url = f"{settings.FASTAPI_URL}/loans/request"
+        response = requests.post(fastapi_url, json=payload)
+
+        if response.status_code == 200:
+            prediction = response.json().get("prediction")
+
+            # Save the prediction result
+            loan_request.prediction_result = 'charged off' if prediction == 1 else 'pif'
+            loan_request.save()
+
+            context = {
+                'loan_request': loan_request,
+                'prediction_result': loan_request.prediction_result
+            }
+            return render(request, self.template_name, context)
+        else:
+            messages.error(request, "An error occurred during prediction.")
+            return redirect('client_loan_list')
+
+
+class ClientLoanRequestSubmitView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
+        if loan_request.prediction_result == 'charged off':
+            loan_request.status = 'rejected'
+            messages.error(request, "Your loan request was rejected.")
+        else:
+            loan_request.status = 'pending'
+            messages.success(request, "Your loan request is pending advisor review.")
+        loan_request.save()
+        return redirect('client_loan_list')
+
+
+class ClientLoanRequestListView(LoginRequiredMixin, View):
+    template_name = 'bankapp/client_loan_list.html'
+
+    def get(self, request):
+        loan_requests = LoanRequest.objects.filter(client=request.user)
+        return render(request, self.template_name, {'loan_requests': loan_requests})
+
+
+### ADVISOR VIEWS ###
+
+class AdvisorLoanRequestListView(LoginRequiredMixin, View):
+    template_name = 'bankapp/advisor_loan_list.html'
+
+    def get(self, request):
+        # Get clients paired with this advisor
+        paired_clients = AdvisorClientPairing.objects.filter(advisor=request.user).values_list('client', flat=True)
+
+        # Display only pending loan requests from paired clients
+        loan_requests = LoanRequest.objects.filter(client__in=paired_clients, status='pending')
+        
+        return render(request, self.template_name, {'loan_requests': loan_requests})
+
+
+
+class AdvisorLoanRequestDetailView(LoginRequiredMixin, View):
+    template_name = 'bankapp/advisor_loan_detail.html'
+
+    def get(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk)
+        
+        # Check advisor-client pairing
+        is_paired = AdvisorClientPairing.objects.filter(
+            advisor=request.user,
+            client=loan_request.client
+        ).exists()
+
+        if not is_paired:
+            raise Http404("You are not authorized to view this loan request.")
+
+        return render(request, self.template_name, {'loan_request': loan_request})
+
+
+class AdvisorLoanRequestApproveView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk)
+
+        # Check pairing before approving
+        is_paired = AdvisorClientPairing.objects.filter(
+            advisor=request.user,
+            client=loan_request.client
+        ).exists()
+
+        if not is_paired:
+            raise Http404("You are not authorized to approve this loan request.")
+        
+        loan_request.status = 'approved'
+        loan_request.save()
+        messages.success(request, "Loan request approved.")
+        return redirect('advisor_loan_list')
+
+
+class AdvisorLoanRequestRejectView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        loan_request = get_object_or_404(LoanRequest, pk=pk)
+
+        # Check pairing before rejecting
+        is_paired = AdvisorClientPairing.objects.filter(
+            advisor=request.user,
+            client=loan_request.client
+        ).exists()
+
+        if not is_paired:
+            raise Http404("You are not authorized to reject this loan request.")
+        
+        loan_request.status = 'rejected'
+        loan_request.save()
+        messages.error(request, "Loan request rejected.")
+        return redirect('advisor_loan_list')

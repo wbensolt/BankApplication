@@ -12,7 +12,7 @@ class BankappConfig(AppConfig):
             from django.db import connection
 
             def run_activation():
-                email = "testuser7@example.com"  # Remplacez par l'email réel
+                email = "Eliandy.SecureBank@test.com"  # Remplacez par l'email réel
                 password = "motdepassefort"      # Remplacez par le mot de passe réel
                 db = connection
                 auth_service = AuthService(db)
