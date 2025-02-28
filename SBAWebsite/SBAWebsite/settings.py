@@ -164,5 +164,7 @@ CHANNEL_LAYERS = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# settings.py
-FASTAPI_URL = "http://localhost:8000"  # Exemple d'URL, ajustez-la selon votre configuration
+
+
+# FAST API connexion
+FASTAPI_URL = "http://localhost:8001"  # Exemple d'URL, ajustez-la selon votre configuration
