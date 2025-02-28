@@ -10,11 +10,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('project/<int:project_id>/', ProjectOverviewView.as_view(), name='project_overview'),
-    #path('auth/login/', LoginView.as_view(), name='login'),
-    #path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('loans/predict/', LoanPredictionView.as_view(), name='loan_predict'),
-   # path('auth/login/', CustomLoginView.as_view(), name='login'),
-    #path('auth/logout/', LogoutView.as_view(next_page='login'), name='logout'),
 
     # Authentication URLs
     path('login/', CustomLoginView.as_view(), name='login'),
@@ -23,16 +19,11 @@ urlpatterns = [
     # Role-Based Dashboards
     path('advisor/dashboard/', DashboardView.as_view(), name='advisor_dashboard'),
     path('client/dashboard/', DashboardView.as_view(), name='client_dashboard'),
-    # Message URLs
-
-    #path('messages/', MessageListView.as_view(), name='messages_list'),
-    #path('messages/<int:pk>/', MessageListView.as_view(), name='message_detail'),
-    #path('messages/<int:pk>/send/', MessageCreateView.as_view(), name='message_create'),
     
 
+    # Role-Based Messages URLs
 
-# Role-Based Messages URLs
-# Client Message URLs
+    # Client Message URLs
     path('client/messages/', MessageListView.as_view(), name='client_messages_list'),
     path('client/messages/<int:pk>/', MessageDetailView.as_view(), name='client_message_detail'),
     path('client/messages/<int:pk>/send/', MessageCreateView.as_view(), name='client_message_create'),
@@ -47,10 +38,9 @@ urlpatterns = [
 #News Urls
 
   # News URLs
-   path('news/', NewsListView.as_view(), name='news_list'),
+    path('news/', NewsListView.as_view(), name='news_list'),
     path('news/<int:pk>/', NewsDetailView.as_view(), name='news_detail'),
 
-    
 
     # Client URLs
  
