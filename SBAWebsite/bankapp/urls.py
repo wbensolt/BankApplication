@@ -2,8 +2,12 @@ from django.urls import path
 
 from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView,
                    MessageListView, MessageCreateView, MessageDetailView, NewsListView, NewsDetailView, NewsCreateView,NewsUpdateView,NewsDeleteView,
-                   CannedMessageListView
-                    )
+                   CannedMessageListView, ClientLoanRequestCreateView, ClientLoanRequestEditView, ClientLoanRequestPredictView, 
+    ClientLoanRequestSubmitView, ClientLoanRequestListView,
+    AdvisorLoanRequestListView, AdvisorLoanRequestDetailView, 
+    AdvisorLoanRequestApproveView, AdvisorLoanRequestRejectView
+)
+                    
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -54,4 +58,17 @@ urlpatterns = [
     path('advisor/news/create/', NewsCreateView.as_view(), name='news_create'),
     path('advisor/news/<int:pk>/edit/', NewsUpdateView.as_view(), name='news_update'),
     path('advisor/news/<int:pk>/delete/', NewsDeleteView.as_view(), name='news_delete'),
+
+     #Client URLs
+    path('client/loans/create/', ClientLoanRequestCreateView.as_view(), name='client_loan_create'),
+    path('client/loans/<int:pk>/edit/', ClientLoanRequestEditView.as_view(), name='client_loan_edit'),
+    path('client/loans/<int:pk>/predict/', ClientLoanRequestPredictView.as_view(), name='client_loan_predict'),
+    path('client/loans/<int:pk>/submit/', ClientLoanRequestSubmitView.as_view(), name='client_loan_submit'),
+    path('client/loans/', ClientLoanRequestListView.as_view(), name='client_loan_list'),
+
+    # Advisor URLs
+    path('advisor/loans/', AdvisorLoanRequestListView.as_view(), name='advisor_loan_list'),
+    path('advisor/loans/<int:pk>/', AdvisorLoanRequestDetailView.as_view(), name='advisor_loan_detail'),
+    path('advisor/loans/<int:pk>/approve/', AdvisorLoanRequestApproveView.as_view(), name='advisor_loan_approve'),
+    path('advisor/loans/<int:pk>/reject/', AdvisorLoanRequestRejectView.as_view(), name='advisor_loan_reject'),
 ]

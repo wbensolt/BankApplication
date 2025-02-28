@@ -171,3 +171,40 @@ class TokenModel(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.TextField()
     expires_at = models.DateTimeField()
+
+
+
+#### Predictions####
+class LoanRequest(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),  # Saved but not submitted for final review
+        ('pending', 'Pending'),  # Submitted but awaiting advisor review
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='loan_requests')
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+    bank_state = models.CharField(max_length=100)
+    approval_fy = models.IntegerField()
+    term = models.IntegerField()
+    no_emp = models.IntegerField()
+    new_exist = models.IntegerField()
+    create_job = models.IntegerField()
+    retained_job = models.IntegerField()
+    franchise_code = models.IntegerField()
+    urban_rural = models.IntegerField()
+    rev_line_cr = models.IntegerField()
+    low_doc = models.IntegerField()
+    disbursement_gross = models.FloatField()
+    gr_appv = models.FloatField()
+    approval_month = models.CharField(max_length=20)
+    naics_code = models.CharField(max_length=20)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    prediction_result = models.CharField(max_length=20, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Loan Request by {self.client.email} - Status: {self.status}"

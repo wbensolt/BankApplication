@@ -3,10 +3,10 @@
 {% block title %}SecureBank - Advisor Dashboard{% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-4rem)] bg-gray-100">
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100" x-data="{ sidebarOpen: false }">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out"
-        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-20"
+        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:translate-x-0': true}">
         <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
             <div class="flex items-center">
                 <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
@@ -22,18 +22,25 @@
                 <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
                 <span class="mx-4">Dashboard</span>
             </a>
-            <a href="/advisor/loans"
+            <a href="{% url 'advisor_loan_list' %}"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="file-text" class="h-5 w-5"></i>
                 <span class="mx-4">Loan Applications</span>
+                {% if pending_reviews_count > 0 %}
+                <span class="ml-auto bg-yellow-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                    {{ pending_reviews_count }}
+                </span>
+                {% endif %}
             </a>
             <a href="{% url 'advisor_messages_list' %}"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="message-square" class="h-5 w-5"></i>
                 <span class="mx-4">Messages</span>
+                {% if unread_messages_count > 0 %}
                 <span class="ml-auto bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
                     {{ unread_messages_count }}
                 </span>
+                {% endif %}
             </a>
             <a href="{% url 'advisor_news_list' %}"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
@@ -53,7 +60,13 @@
                 </button>
                 <div class="flex items-center">
                     <span class="text-sm text-gray-600">Welcome back,</span>
-                    <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
+                    <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.get_full_name|default:request.user.username }}</span>
+                </div>
+                <div>
+                    <a href="{% url 'logout' %}" class="text-sm text-gray-600 hover:text-gray-900">
+                        <i data-lucide="log-out" class="h-5 w-5 inline-block align-text-bottom"></i>
+                        Logout
+                    </a>
                 </div>
             </div>
         </div>
@@ -108,17 +121,44 @@
                 </div>
             </div>
 
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow mb-6 p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{% url 'advisor_loan_list' %}" class="bg-yellow-50 hover:bg-yellow-100 p-4 rounded-lg flex items-center transition-colors">
+                        <div class="p-2 rounded-full bg-yellow-100">
+                            <i data-lucide="clipboard-check" class="h-5 w-5 text-yellow-600"></i>
+                        </div>
+                        <span class="ml-3 text-yellow-800 font-medium">Review Loan Applications</span>
+                    </a>
+                    <a href="{% url 'advisor_messages_list' %}" class="bg-blue-50 hover:bg-blue-100 p-4 rounded-lg flex items-center transition-colors">
+                        <div class="p-2 rounded-full bg-blue-100">
+                            <i data-lucide="message-circle" class="h-5 w-5 text-blue-600"></i>
+                        </div>
+                        <span class="ml-3 text-blue-800 font-medium">Message Clients</span>
+                    </a>
+                    <a href="{% url 'news_create' %}" class="bg-green-50 hover:bg-green-100 p-4 rounded-lg flex items-center transition-colors">
+                        <div class="p-2 rounded-full bg-green-100">
+                            <i data-lucide="file-plus" class="h-5 w-5 text-green-600"></i>
+                        </div>
+                        <span class="ml-3 text-green-800 font-medium">Create News Article</span>
+                    </a>
+                </div>
+            </div>
+
             <!-- Recent Loan Applications -->
             <div class="bg-white rounded-lg shadow mb-6">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Recent Loan Applications</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Recent Loan Applications</h3>
+                        <a href="{% url 'advisor_loan_list' %}" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -128,13 +168,38 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for application in recent_applications %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ application.client.username }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ application.loan_type }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ application.amount }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ application.status }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ application.created_at }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <a href="#" class="text-blue-600 hover:text-blue-900">Review</a>
+                                    <div class="text-sm font-medium text-gray-900">{{ application.client.get_full_name|default:application.client.username }}</div>
+                                    <div class="text-sm text-gray-500">{{ application.client.email }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">${{ application.gr_appv }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if application.status == 'approved' %}
+                                            bg-green-100 text-green-800
+                                        {% elif application.status == 'pending' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% elif application.status == 'rejected' %}
+                                            bg-red-100 text-red-800
+                                        {% else %}
+                                            bg-gray-100 text-gray-800
+                                        {% endif %}">
+                                        {{ application.status|title }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ application.created_at|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{% url 'advisor_loan_detail' application.id %}" class="text-indigo-600 hover:text-indigo-900">Review</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    No recent loan applications
                                 </td>
                             </tr>
                             {% endfor %}
@@ -142,16 +207,42 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Latest News -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">Latest Bank News</h3>
+                        <a href="{% url 'advisor_news_list' %}" class="text-sm text-blue-600 hover:text-blue-800">Manage news</a>
+                    </div>
+                </div>
+                <ul class="divide-y divide-gray-200">
+                    {% for article in latest_news %}
+                    <li class="px-6 py-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <a href="{% url 'news_detail' article.id %}" class="text-blue-600 hover:underline font-medium">{{ article.title }}</a>
+                                <p class="text-sm text-gray-600 mt-1">{{ article.content|truncatewords:20 }}</p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ article.published_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="px-6 py-4 text-center text-gray-500">
+                        No news articles available at this time.
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                    <a href="{% url 'news_create' %}" class="text-sm text-blue-600 hover:text-blue-800">
+                        <i data-lucide="plus" class="h-4 w-4 inline-block align-text-bottom"></i>
+                        Create new article
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('dashboard', () => ({
-            sidebarOpen: false
-        }))
-    })
-</script>
 {% endblock %}
