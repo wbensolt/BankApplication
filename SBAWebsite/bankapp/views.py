@@ -188,49 +188,49 @@ class ProjectOverviewView(LoginRequiredMixin, TemplateView):
 
 ##### Predictions View 
 
-class LoanPredictionView(View):
-    template_name = "bankapp/loan_predict.html"
+# class LoanPredictionView(View):
+#     template_name = "bankapp/loan_predict.html"
 
-    def get(self, request):
-        return render(request, self.template_name)
+#     def get(self, request):
+#         return render(request, self.template_name)
 
-    def post(self, request):
-        # Get token from session
-        token = request.session.get("access_token")
-        headers = {"Authorization": f"Bearer {token}"}
+#     def post(self, request):
+#         # Get token from session
+#         token = request.session.get("access_token")
+#         headers = {"Authorization": f"Bearer {token}"}
 
-        # Get form data
-        payload = {
-            "State": request.POST.get("state"),
-            "Zip": request.POST.get("zip"),
-            "BankState": request.POST.get("bankstate"),
-            "ApprovalFY": int(request.POST.get("approvalfy")),
-            "Term": int(request.POST.get("term")),
-            "NoEmp": int(request.POST.get("noemp")),
-            "NewExist": int(request.POST.get("newexist")),
-            "CreateJob": int(request.POST.get("createjob")),
-            "RetainedJob": int(request.POST.get("retainedjob")),
-            "FranchiseCode": int(request.POST.get("franchisecode")),
-            "UrbanRural": int(request.POST.get("urbanrural")),
-            "RevLineCr": int(request.POST.get("revlinecr")),
-            "LowDoc": int(request.POST.get("lowdoc")),
-            "DisbursementGross": float(request.POST.get("disbursementgross")),
-            "GrAppv": float(request.POST.get("grappv")),
-            "ApprovalMonth": request.POST.get("approvalmonth"),
-            "NAICS_CODE": request.POST.get("naics_code"),
-        }
+#         # Get form data
+#         payload = {
+#             "State": request.POST.get("state"),
+#             "Zip": request.POST.get("zip"),
+#             "BankState": request.POST.get("bankstate"),
+#             "ApprovalFY": int(request.POST.get("approvalfy")),
+#             "Term": int(request.POST.get("term")),
+#             "NoEmp": int(request.POST.get("noemp")),
+#             "NewExist": int(request.POST.get("newexist")),
+#             "CreateJob": int(request.POST.get("createjob")),
+#             "RetainedJob": int(request.POST.get("retainedjob")),
+#             "FranchiseCode": int(request.POST.get("franchisecode")),
+#             "UrbanRural": int(request.POST.get("urbanrural")),
+#             "RevLineCr": int(request.POST.get("revlinecr")),
+#             "LowDoc": int(request.POST.get("lowdoc")),
+#             "DisbursementGross": float(request.POST.get("disbursementgross")),
+#             "GrAppv": float(request.POST.get("grappv")),
+#             "ApprovalMonth": request.POST.get("approvalmonth"),
+#             "NAICS_CODE": request.POST.get("naics_code"),
+#         }
 
-        # Send request to FastAPI
-        response = requests.post(
-            "http://127.0.0.1:8001/loans/predict", json=payload, headers=headers
-        )
+#         # Send request to FastAPI
+#         response = requests.post(
+#             "http://127.0.0.1:8001/loans/predict", json=payload, headers=headers
+#         )
 
-        if response.status_code == 200:
-            prediction = response.json()
-            return render(request, self.template_name, {"prediction": prediction})
-        else:
-            messages.error(request, "Prediction failed. Please check the input data.")
-            return render(request, self.template_name)
+#         if response.status_code == 200:
+#             prediction = response.json()
+#             return render(request, self.template_name, {"prediction": prediction})
+#         else:
+#             messages.error(request, "Prediction failed. Please check the input data.")
+#             return render(request, self.template_name)
 
 
 ##### Messages Views
@@ -508,16 +508,74 @@ from .forms import LoanRequestForm
 
 ### CLIENT VIEWS ###
 
+# class ClientLoanRequestCreateView(LoginRequiredMixin, View):
+#     template_name = 'bankapp/loan_request_form.html'
+
+#     def get(self, request):
+#         form = LoanRequestForm()
+#         return render(request, self.template_name, {'form': form})
+
+#     def post(self, request):
+#         form = LoanRequestForm(request.POST)
+        
+#         if form.is_valid():
+#             loan_request = form.save(commit=False)
+#             loan_request.client = request.user
+#             loan_request.status = 'draft'  # Save as draft
+#             loan_request.save()
+
+#             messages.success(request, "Loan request saved as draft.")
+#             return redirect('client_loan_list')
+        
+#         return render(request, self.template_name, {'form': form})class ClientLoanRequestCreateView(LoginRequiredMixin, View):
+ 
 class ClientLoanRequestCreateView(LoginRequiredMixin, View):
     template_name = 'bankapp/loan_request_form.html'
 
     def get(self, request):
-        form = LoanRequestForm()
+        # Check if the user has an unsaved draft
+        draft = LoanRequest.objects.filter(client=request.user, status='draft').first()
+
+        if draft:
+            # Prefill the form with the draft data
+            form = LoanRequestForm(instance=draft)
+        else:
+            # New form with default values
+            initial_data = {
+                "state": "",
+                "zip_code": "",
+                "bank_state": "",
+                "approval_fy": 2024,
+                "term": 36,
+                "no_emp": 0,
+                "new_exist": 1,
+                "create_job": 0,
+                "retained_job": 0,
+                "franchise_code": 0,
+                "urban_rural": 1,
+                "rev_line_cr": 0,
+                "low_doc": 0,
+                "disbursement_gross": 0.0,
+                "gr_appv": 0.0,
+                "approval_month": "",
+                "naics_code": ""
+            }
+            form = LoanRequestForm(initial=initial_data)
+        
+        # Return the rendered template with the form
         return render(request, self.template_name, {'form': form})
 
     def post(self, request):
-        form = LoanRequestForm(request.POST)
-        
+        # Check if there's an existing draft
+        draft = LoanRequest.objects.filter(client=request.user, status='draft').first()
+
+        if draft:
+            # Update the existing draft
+            form = LoanRequestForm(request.POST, instance=draft)
+        else:
+            # Create a new draft
+            form = LoanRequestForm(request.POST)
+
         if form.is_valid():
             loan_request = form.save(commit=False)
             loan_request.client = request.user
@@ -526,8 +584,15 @@ class ClientLoanRequestCreateView(LoginRequiredMixin, View):
 
             messages.success(request, "Loan request saved as draft.")
             return redirect('client_loan_list')
-        
+        else:
+            # Add error message when form is not valid
+            messages.error(request, "There was an error saving your loan request. Please check the form and try again.")
+            
+        # If form is not valid, re-render the form with errors
         return render(request, self.template_name, {'form': form})
+
+
+
 
 
 class ClientLoanRequestEditView(LoginRequiredMixin, View):
@@ -550,52 +615,130 @@ class ClientLoanRequestEditView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': form})
 
 
+#class ClientLoanRequestPredictView(LoginRequiredMixin, View):
+    #template_name = 'bankapp/loan_prediction_result.html'
+
+    #def post(self, request, pk):
+        #loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
+
+        # Prepare data for FastAPI
+        #payload = {
+            #"State": loan_request.state,
+            #"Zip": loan_request.zip_code,
+        #     "BankState": loan_request.bank_state,
+        #     "ApprovalFY": loan_request.approval_fy,
+        #     "Term": loan_request.term,
+        #     "NoEmp": loan_request.no_emp,
+        #     "NewExist": loan_request.new_exist,
+        #     "CreateJob": loan_request.create_job,
+        #     "RetainedJob": loan_request.retained_job,
+        #     "FranchiseCode": loan_request.franchise_code,
+        #     "UrbanRural": loan_request.urban_rural,
+        #     "RevLineCr": loan_request.rev_line_cr,
+        #     "LowDoc": loan_request.low_doc,
+        #     "DisbursementGross": loan_request.disbursement_gross,
+        #     "GrAppv": loan_request.gr_appv,
+        #     "ApprovalMonth": loan_request.approval_month,
+        #     "NAICS_CODE": loan_request.naics_code,
+        # }
+
+        # # Send request to FastAPI
+        # fastapi_url = f"{settings.FASTAPI_URL}/loans/request"
+        # response = requests.post(fastapi_url, json=payload)
+
+        # if response.status_code == 200:
+        #     prediction = response.json().get("prediction")
+
+        #     # Save the prediction result
+        #     loan_request.prediction_result = 'charged off' if prediction == 1 else 'pif'
+        #     loan_request.save()
+
+        #     context = {
+        #         'loan_request': loan_request,
+        #         'prediction_result': loan_request.prediction_result
+        #     }
+        #     return render(request, self.template_name, context)
+        # else:
+        #     messages.error(request, "An error occurred during prediction.")
+        #     return redirect('client_loan_list')
+        
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
+from django.contrib import messages
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import LoanRequest
+from .utils import get_service_account_token  # Import the updated function
+
 class ClientLoanRequestPredictView(LoginRequiredMixin, View):
     template_name = 'bankapp/loan_prediction_result.html'
+    login_url = "login"  
 
     def post(self, request, pk):
         loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
 
-        # Prepare data for FastAPI
-        payload = {
-            "State": loan_request.state,
-            "Zip": loan_request.zip_code,
-            "BankState": loan_request.bank_state,
-            "ApprovalFY": loan_request.approval_fy,
-            "Term": loan_request.term,
-            "NoEmp": loan_request.no_emp,
-            "NewExist": loan_request.new_exist,
-            "CreateJob": loan_request.create_job,
-            "RetainedJob": loan_request.retained_job,
-            "FranchiseCode": loan_request.franchise_code,
-            "UrbanRural": loan_request.urban_rural,
-            "RevLineCr": loan_request.rev_line_cr,
-            "LowDoc": loan_request.low_doc,
-            "DisbursementGross": loan_request.disbursement_gross,
-            "GrAppv": loan_request.gr_appv,
-            "ApprovalMonth": loan_request.approval_month,
-            "NAICS_CODE": loan_request.naics_code,
+        # ✅ Get Service Account Token (using hardcoded credentials)
+        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBbnRvaW5lLlNlY3VyZUJhbmtAdGVzdC5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0MDc5ODAwMX0.KBHr7C74qPR6MassT0abi1xp29gQll3H8xn4C6THgBs"
+        
+        if not token:
+            messages.error(request, "Failed to retrieve a valid token. Please try again later.")
+            return redirect('client_loan_list')
+
+        # ✅ Prepare data for FastAPI
+        payload = payload = {
+             "State": loan_request.state,
+             "Zip": loan_request.zip_code,
+             "BankState": loan_request.bank_state,
+             "ApprovalFY": int(loan_request.approval_fy),  # Ensure int
+            "Term": int(loan_request.term),               # Ensure int
+            "NoEmp": int(loan_request.no_emp),             # Ensure int
+            "NewExist": int(loan_request.new_exist),       # Ensure int (0 or 1)
+            "CreateJob": int(loan_request.create_job),     # Ensure int
+            "RetainedJob": int(loan_request.retained_job), # Ensure int
+            "FranchiseCode": int(loan_request.franchise_code),  # Ensure int (0 or 1)
+            "UrbanRural": int(loan_request.urban_rural),   # Ensure int (0, 1 or 2)
+            "RevLineCr": int(loan_request.rev_line_cr),    # Ensure int (0 or 1)
+            "LowDoc": int(loan_request.low_doc),           # Ensure int (0 or 1)
+            "DisbursementGross": float(loan_request.disbursement_gross),  # Ensure float
+            "GrAppv": float(loan_request.gr_appv),         # Ensure float
+            "ApprovalMonth": int(loan_request.approval_month), # Ensure int for month
+            "NAICS_CODE": loan_request.naics_code }
+        print("Payload sent to FastAPI:", payload)
+
+
+        # ✅ Set Headers
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
         }
 
-        # Send request to FastAPI
-        fastapi_url = f"{settings.FASTAPI_URL}/loans/request"
-        response = requests.post(fastapi_url, json=payload)
+        # ✅ Send request to FastAPI
+        fastapi_url = "http://localhost:8001/loans/predict"  # Adjust if needed
+        try:
+            response = requests.post(fastapi_url, json=payload, headers=headers)
+            response.raise_for_status()
+            
+            prediction = response.json().get("prediction", None)
+            print(f"Prediction Response: {prediction}")
 
-        if response.status_code == 200:
-            prediction = response.json().get("prediction")
+            if prediction is not None:
+                loan_request.prediction_result = 'charged off' if prediction == 1 else 'pif'
+                loan_request.save()
 
-            # Save the prediction result
-            loan_request.prediction_result = 'charged off' if prediction == 1 else 'pif'
-            loan_request.save()
+                context = {
+                    'loan_request': loan_request,
+                    'prediction_result': loan_request.prediction_result
+                }
+                return render(request, self.template_name, context)
+            else:
+                messages.error(request, "No prediction returned from the model.")
+                return redirect('client_loan_list')
 
-            context = {
-                'loan_request': loan_request,
-                'prediction_result': loan_request.prediction_result
-            }
-            return render(request, self.template_name, context)
-        else:
-            messages.error(request, "An error occurred during prediction.")
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f"API Error: {str(e)}")
             return redirect('client_loan_list')
+
+
 
 
 class ClientLoanRequestSubmitView(LoginRequiredMixin, View):
@@ -621,17 +764,17 @@ class ClientLoanRequestListView(LoginRequiredMixin, View):
 
 ### ADVISOR VIEWS ###
 
-class AdvisorLoanRequestListView(LoginRequiredMixin, View):
-    template_name = 'bankapp/advisor_loan_list.html'
+# class AdvisorLoanRequestListView(LoginRequiredMixin, View):
+#     template_name = 'bankapp/advisor_loan_list.html'
 
-    def get(self, request):
-        # Get clients paired with this advisor
-        paired_clients = AdvisorClientPairing.objects.filter(advisor=request.user).values_list('client', flat=True)
+#     def get(self, request):
+#         # Get clients paired with this advisor
+#         paired_clients = AdvisorClientPairing.objects.filter(advisor=request.user).values_list('client', flat=True)
 
-        # Display only pending loan requests from paired clients
-        loan_requests = LoanRequest.objects.filter(client__in=paired_clients, status='pending')
+#         # Display only pending loan requests from paired clients
+#         loan_requests = LoanRequest.objects.filter(client__in=paired_clients, status='pending')
         
-        return render(request, self.template_name, {'loan_requests': loan_requests})
+#         return render(request, self.template_name, {'loan_requests': loan_requests})
 
 
 
@@ -672,6 +815,7 @@ class AdvisorLoanRequestApproveView(LoginRequiredMixin, View):
         return redirect('advisor_loan_list')
 
 
+
 class AdvisorLoanRequestRejectView(LoginRequiredMixin, View):
     def post(self, request, pk):
         loan_request = get_object_or_404(LoanRequest, pk=pk)
@@ -689,3 +833,46 @@ class AdvisorLoanRequestRejectView(LoginRequiredMixin, View):
         loan_request.save()
         messages.error(request, "Loan request rejected.")
         return redirect('advisor_loan_list')
+        
+from django.core.paginator import Paginator
+class AdvisorLoanRequestListView(LoginRequiredMixin, View):
+    template_name = 'bankapp/advisor_loan_list.html'
+
+    def get(self, request):
+        # Get clients paired with this advisor
+        paired_clients = AdvisorClientPairing.objects.filter(advisor=request.user).values_list('client', flat=True)
+        
+        # Get filter parameters
+        status_filter = request.GET.get('status', '')
+        search_term = request.GET.get('search', '')
+        
+        # Base query - all loans from paired clients
+        loan_requests_query = LoanRequest.objects.filter(client__in=paired_clients)
+        
+        # Apply status filter if provided
+        if status_filter:
+            loan_requests_query = loan_requests_query.filter(status=status_filter)
+        
+        # Apply search filter if provided
+        if search_term:
+            loan_requests_query = loan_requests_query.filter(
+                Q(client__first_name__icontains=search_term) | 
+                Q(client__last_name__icontains=search_term)
+            )
+        
+        # Count pending loans for notification badge
+        pending_count = LoanRequest.objects.filter(client__in=paired_clients, status='pending').count()
+        
+        # Paginate results
+        paginator = Paginator(loan_requests_query, 10)  # 10 loans per page
+        page = request.GET.get('page')
+        loan_requests = paginator.get_page(page)
+        
+        context = {
+            'loan_requests': loan_requests,
+            'pending_count': pending_count,
+            'status_filter': status_filter,
+            'search_term': search_term,
+        }
+        
+        return render(request, self.template_name, context)

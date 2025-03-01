@@ -52,17 +52,35 @@
                     <span class="text-sm text-gray-600">Welcome back,</span>
                     <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
                 </div>
-                <div>
-                    <a href="{% url 'logout' %}" class="text-sm text-gray-600 hover:text-gray-900">
-                        <i data-lucide="log-out" class="h-5 w-5 inline-block align-text-bottom"></i>
-                        Logout
-                    </a>
-                </div>
             </div>
         </div>
 
         <!-- Form Content -->
         <div class="p-6">
+            <!-- Display Django messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 {% if message.tags == 'error' %}bg-red-50 border-l-4 border-red-500{% elif message.tags == 'success' %}bg-green-50 border-l-4 border-green-500{% else %}bg-blue-50 border-l-4 border-blue-500{% endif %} p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                {% if message.tags == 'error' %}
+                                    <i data-lucide="alert-circle" class="h-5 w-5 text-red-500"></i>
+                                {% elif message.tags == 'success' %}
+                                    <i data-lucide="check-circle" class="h-5 w-5 text-green-500"></i>
+                                {% else %}
+                                    <i data-lucide="info" class="h-5 w-5 text-blue-500"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm {% if message.tags == 'error' %}text-red-700{% elif message.tags == 'success' %}text-green-700{% else %}text-blue-700{% endif %}">
+                                    {{ message }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-900">
@@ -95,34 +113,60 @@
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Location Information</h3>
                             
-                            <div>
-                                <label for="{{ form.state.id_for_label }}" class="block text-sm font-medium text-gray-700">State</label>
-                                <input type="text" name="{{ form.state.name }}" id="{{ form.state.id_for_label }}" 
-                                    value="{{ form.state.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.state.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.state.id_for_label }}" class="block text-sm font-medium {% if form.state.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    State {% if form.state.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.state.name }}" id="{{ form.state.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.state.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    <option value="">Select a state</option>
+                                    {% for value, label in form.fields.state.choices %}
+                                        <option value="{{ value }}" {% if form.state.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.state.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.state.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.state.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.state.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.state.help_text }}</p>
                             </div>
                             
-                            <div>
-                                <label for="{{ form.zip_code.id_for_label }}" class="block text-sm font-medium text-gray-700">ZIP Code</label>
+                            <div class="{% if form.zip_code.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.zip_code.id_for_label }}" class="block text-sm font-medium {% if form.zip_code.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    ZIP Code {% if form.zip_code.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="text" name="{{ form.zip_code.name }}" id="{{ form.zip_code.id_for_label }}" 
                                     value="{{ form.zip_code.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md {% if form.zip_code.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.zip_code.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.zip_code.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.zip_code.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.zip_code.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.zip_code.help_text }}</p>
                             </div>
                             
-                            <div>
-                                <label for="{{ form.bank_state.id_for_label }}" class="block text-sm font-medium text-gray-700">Bank State</label>
-                                <input type="text" name="{{ form.bank_state.name }}" id="{{ form.bank_state.id_for_label }}" 
-                                    value="{{ form.bank_state.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.bank_state.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.bank_state.id_for_label }}" class="block text-sm font-medium {% if form.bank_state.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Bank State {% if form.bank_state.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.bank_state.name }}" id="{{ form.bank_state.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.bank_state.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    <option value="">Select a state</option>
+                                    {% for value, label in form.fields.bank_state.choices %}
+                                        <option value="{{ value }}" {% if form.bank_state.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.bank_state.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.bank_state.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.bank_state.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.bank_state.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.bank_state.help_text }}</p>
                             </div>
                         </div>
                         
@@ -130,43 +174,63 @@
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Loan Details</h3>
                             
-                            <div>
-                                <label for="{{ form.approval_fy.id_for_label }}" class="block text-sm font-medium text-gray-700">Approval Fiscal Year</label>
+                            <div class="{% if form.approval_fy.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.approval_fy.id_for_label }}" class="block text-sm font-medium {% if form.approval_fy.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Approval Fiscal Year {% if form.approval_fy.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" name="{{ form.approval_fy.name }}" id="{{ form.approval_fy.id_for_label }}" 
-                                    value="{{ form.approval_fy.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.approval_fy.value|default:'' }}" min="1962"
+                                    class="mt-1 block w-full rounded-md {% if form.approval_fy.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.approval_fy.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.approval_fy.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.approval_fy.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                             
-                            <div>
-                                <label for="{{ form.term.id_for_label }}" class="block text-sm font-medium text-gray-700">Term (months)</label>
+                            <div class="{% if form.term.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.term.id_for_label }}" class="block text-sm font-medium {% if form.term.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Term (months) {% if form.term.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" name="{{ form.term.name }}" id="{{ form.term.id_for_label }}" 
-                                    value="{{ form.term.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.term.value|default:'' }}" min="1"
+                                    class="mt-1 block w-full rounded-md {% if form.term.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.term.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.term.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.term.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                             
-                            <div>
-                                <label for="{{ form.disbursement_gross.id_for_label }}" class="block text-sm font-medium text-gray-700">Disbursement Gross</label>
+                            <div class="{% if form.disbursement_gross.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.disbursement_gross.id_for_label }}" class="block text-sm font-medium {% if form.disbursement_gross.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Disbursement Gross {% if form.disbursement_gross.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" step="0.01" name="{{ form.disbursement_gross.name }}" id="{{ form.disbursement_gross.id_for_label }}" 
-                                    value="{{ form.disbursement_gross.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.disbursement_gross.value|default:'' }}" min="0"
+                                    class="mt-1 block w-full rounded-md {% if form.disbursement_gross.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.disbursement_gross.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.disbursement_gross.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.disbursement_gross.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                             
-                            <div>
-                                <label for="{{ form.gr_appv.id_for_label }}" class="block text-sm font-medium text-gray-700">Gross Approval</label>
+                            <div class="{% if form.gr_appv.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.gr_appv.id_for_label }}" class="block text-sm font-medium {% if form.gr_appv.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Gross Approval {% if form.gr_appv.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" step="0.01" name="{{ form.gr_appv.name }}" id="{{ form.gr_appv.id_for_label }}" 
-                                    value="{{ form.gr_appv.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.gr_appv.value|default:'' }}" min="0"
+                                    class="mt-1 block w-full rounded-md {% if form.gr_appv.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.gr_appv.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.gr_appv.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.gr_appv.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -175,43 +239,67 @@
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Business Information</h3>
                             
-                            <div>
-                                <label for="{{ form.no_emp.id_for_label }}" class="block text-sm font-medium text-gray-700">Number of Employees</label>
+                            <div class="{% if form.no_emp.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.no_emp.id_for_label }}" class="block text-sm font-medium {% if form.no_emp.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Number of Employees {% if form.no_emp.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" name="{{ form.no_emp.name }}" id="{{ form.no_emp.id_for_label }}" 
-                                    value="{{ form.no_emp.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.no_emp.value|default:'' }}" min="0"
+                                    class="mt-1 block w-full rounded-md {% if form.no_emp.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.no_emp.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.no_emp.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.no_emp.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                             
-                            <div>
-                                <label for="{{ form.new_exist.id_for_label }}" class="block text-sm font-medium text-gray-700">New Business (1) or Existing (2)</label>
-                                <input type="number" min="1" max="2" name="{{ form.new_exist.name }}" id="{{ form.new_exist.id_for_label }}" 
-                                    value="{{ form.new_exist.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.new_exist.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.new_exist.id_for_label }}" class="block text-sm font-medium {% if form.new_exist.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Business Type {% if form.new_exist.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.new_exist.name }}" id="{{ form.new_exist.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.new_exist.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    {% for value, label in form.fields.new_exist.choices %}
+                                        <option value="{{ value }}" {% if form.new_exist.value|stringformat:"i" == value|stringformat:"i" %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.new_exist.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.new_exist.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.new_exist.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.new_exist.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.new_exist.help_text }}</p>
                             </div>
                             
-                            <div>
-                                <label for="{{ form.create_job.id_for_label }}" class="block text-sm font-medium text-gray-700">Jobs Created</label>
+                            <div class="{% if form.create_job.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.create_job.id_for_label }}" class="block text-sm font-medium {% if form.create_job.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Jobs Created {% if form.create_job.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" name="{{ form.create_job.name }}" id="{{ form.create_job.id_for_label }}" 
-                                    value="{{ form.create_job.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.create_job.value|default:'' }}" min="0"
+                                    class="mt-1 block w-full rounded-md {% if form.create_job.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.create_job.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.create_job.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.create_job.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                             
-                            <div>
-                                <label for="{{ form.retained_job.id_for_label }}" class="block text-sm font-medium text-gray-700">Jobs Retained</label>
+                            <div class="{% if form.retained_job.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.retained_job.id_for_label }}" class="block text-sm font-medium {% if form.retained_job.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Jobs Retained {% if form.retained_job.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
                                 <input type="number" name="{{ form.retained_job.name }}" id="{{ form.retained_job.id_for_label }}" 
-                                    value="{{ form.retained_job.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    value="{{ form.retained_job.value|default:'' }}" min="0"
+                                    class="mt-1 block w-full rounded-md {% if form.retained_job.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
                                 {% if form.retained_job.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.retained_job.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.retained_job.errors }}</p>
+                                </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -220,44 +308,80 @@
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Additional Information</h3>
                             
-                            <div>
-                                <label for="{{ form.franchise_code.id_for_label }}" class="block text-sm font-medium text-gray-700">Franchise Code</label>
-                                <input type="number" name="{{ form.franchise_code.name }}" id="{{ form.franchise_code.id_for_label }}" 
-                                    value="{{ form.franchise_code.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.franchise_code.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.franchise_code.id_for_label }}" class="block text-sm font-medium {% if form.franchise_code.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Is this a franchise? {% if form.franchise_code.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.franchise_code.name }}" id="{{ form.franchise_code.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.franchise_code.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    {% for value, label in form.fields.franchise_code.choices %}
+                                        <option value="{{ value }}" {% if form.franchise_code.value|stringformat:"i" == value|stringformat:"i" %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.franchise_code.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.franchise_code.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.franchise_code.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.franchise_code.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.franchise_code.help_text }}</p>
                             </div>
                             
-                            <div>
-                                <label for="{{ form.urban_rural.id_for_label }}" class="block text-sm font-medium text-gray-700">Urban (1) or Rural (2)</label>
-                                <input type="number" min="1" max="2" name="{{ form.urban_rural.name }}" id="{{ form.urban_rural.id_for_label }}" 
-                                    value="{{ form.urban_rural.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.urban_rural.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.urban_rural.id_for_label }}" class="block text-sm font-medium {% if form.urban_rural.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Location Type {% if form.urban_rural.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.urban_rural.name }}" id="{{ form.urban_rural.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.urban_rural.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    {% for value, label in form.fields.urban_rural.choices %}
+                                        <option value="{{ value }}" {% if form.urban_rural.value|stringformat:"i" == value|stringformat:"i" %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.urban_rural.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.urban_rural.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.urban_rural.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.urban_rural.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.urban_rural.help_text }}</p>
                             </div>
                             
-                            <div>
-                                <label for="{{ form.rev_line_cr.id_for_label }}" class="block text-sm font-medium text-gray-700">Revolving Line of Credit (1=Yes, 0=No)</label>
-                                <input type="number" min="0" max="1" name="{{ form.rev_line_cr.name }}" id="{{ form.rev_line_cr.id_for_label }}" 
-                                    value="{{ form.rev_line_cr.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.rev_line_cr.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.rev_line_cr.id_for_label }}" class="block text-sm font-medium {% if form.rev_line_cr.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Revolving Line of Credit {% if form.rev_line_cr.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.rev_line_cr.name }}" id="{{ form.rev_line_cr.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.rev_line_cr.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    {% for value, label in form.fields.rev_line_cr.choices %}
+                                        <option value="{{ value }}" {% if form.rev_line_cr.value|stringformat:"i" == value|stringformat:"i" %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.rev_line_cr.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.rev_line_cr.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.rev_line_cr.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.rev_line_cr.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.rev_line_cr.help_text }}</p>
                             </div>
                             
-                            <div>
-                                <label for="{{ form.low_doc.id_for_label }}" class="block text-sm font-medium text-gray-700">Low Documentation (1=Yes, 0=No)</label>
-                                <input type="number" min="0" max="1" name="{{ form.low_doc.name }}" id="{{ form.low_doc.id_for_label }}" 
-                                    value="{{ form.low_doc.value|default:'' }}" 
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="{% if form.low_doc.errors %}error-field animate-pulse{% endif %}">
+                                <label for="{{ form.low_doc.id_for_label }}" class="block text-sm font-medium {% if form.low_doc.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                    Low Documentation {% if form.low_doc.errors %}<span class="text-red-500">*</span>{% endif %}
+                                </label>
+                                <select name="{{ form.low_doc.name }}" id="{{ form.low_doc.id_for_label }}" 
+                                    class="mt-1 block w-full rounded-md {% if form.low_doc.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                    {% for value, label in form.fields.low_doc.choices %}
+                                        <option value="{{ value }}" {% if form.low_doc.value|stringformat:"i" == value|stringformat:"i" %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.low_doc.errors %}
-                                <p class="mt-2 text-sm text-red-600">{{ form.low_doc.errors }}</p>
+                                <div class="flex items-center mt-1">
+                                    <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                    <p class="text-sm text-red-600">{{ form.low_doc.errors }}</p>
+                                </div>
                                 {% endif %}
+                                <p class="mt-1 text-xs {% if form.low_doc.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.low_doc.help_text }}</p>
                             </div>
                         </div>
                         
@@ -266,24 +390,43 @@
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Date and Industry Information</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="{{ form.approval_month.id_for_label }}" class="block text-sm font-medium text-gray-700">Approval Month</label>
-                                    <input type="text" name="{{ form.approval_month.name }}" id="{{ form.approval_month.id_for_label }}" 
-                                        value="{{ form.approval_month.value|default:'' }}" 
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <div class="{% if form.approval_month.errors %}error-field animate-pulse{% endif %}">
+                                    <label for="{{ form.approval_month.id_for_label }}" class="block text-sm font-medium {% if form.approval_month.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                        Approval Month {% if form.approval_month.errors %}<span class="text-red-500">*</span>{% endif %}
+                                    </label>
+                                    <select name="{{ form.approval_month.name }}" id="{{ form.approval_month.id_for_label }}" 
+                                        class="mt-1 block w-full rounded-md {% if form.approval_month.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                        <option value="">Select a month</option>
+                                        {% for value, label in form.fields.approval_month.widget.choices %}
+                                            <option value="{{ value }}" {% if form.approval_month.value|stringformat:"i" == value|stringformat:"i" %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
                                     {% if form.approval_month.errors %}
-                                    <p class="mt-2 text-sm text-red-600">{{ form.approval_month.errors }}</p>
+                                    <div class="flex items-center mt-1">
+                                        <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                        <p class="text-sm text-red-600">{{ form.approval_month.errors }}</p>
+                                    </div>
                                     {% endif %}
                                 </div>
                                 
-                                <div>
-                                    <label for="{{ form.naics_code.id_for_label }}" class="block text-sm font-medium text-gray-700">NAICS Code</label>
-                                    <input type="text" name="{{ form.naics_code.name }}" id="{{ form.naics_code.id_for_label }}" 
-                                        value="{{ form.naics_code.value|default:'' }}" 
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <div class="{% if form.naics_code.errors %}error-field animate-pulse{% endif %}">
+                                    <label for="{{ form.naics_code.id_for_label }}" class="block text-sm font-medium {% if form.naics_code.errors %}text-red-700{% else %}text-gray-700{% endif %}">
+                                        Industry (NAICS Code) {% if form.naics_code.errors %}<span class="text-red-500">*</span>{% endif %}
+                                    </label>
+                                    <select name="{{ form.naics_code.name }}" id="{{ form.naics_code.id_for_label }}" 
+                                        class="mt-1 block w-full rounded-md {% if form.naics_code.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% else %}border-gray-300 focus:ring-blue-500 focus:border-blue-500{% endif %} shadow-sm sm:text-sm">
+                                        <option value="">Select an industry</option>
+                                        {% for value, label in form.fields.naics_code.choices %}
+                                            <option value="{{ value }}" {% if form.naics_code.value == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
                                     {% if form.naics_code.errors %}
-                                    <p class="mt-2 text-sm text-red-600">{{ form.naics_code.errors }}</p>
+                                    <div class="flex items-center mt-1">
+                                        <i data-lucide="alert-circle" class="h-4 w-4 text-red-500 mr-1"></i>
+                                        <p class="text-sm text-red-600">{{ form.naics_code.errors }}</p>
+                                    </div>
                                     {% endif %}
+                                    <p class="mt-1 text-xs {% if form.naics_code.errors %}text-red-500{% else %}text-gray-500{% endif %}">{{ form.naics_code.help_text }}</p>
                                 </div>
                             </div>
                         </div>
@@ -312,4 +455,34 @@
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes errorPulse {
+        0% { background-color: rgba(254, 226, 226, 0); }
+        50% { background-color: rgba(254, 226, 226, 0.4); }
+        100% { background-color: rgba(254, 226, 226, 0); }
+    }
+    
+    .error-field {
+        padding: 0.75rem;
+        margin: -0.75rem;
+        border-radius: 0.375rem;
+    }
+    
+    .animate-pulse {
+        animation: errorPulse 2s ease-in-out infinite;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Scroll to the first error field if there are any errors
+        const firstErrorField = document.querySelector('.error-field');
+        if (firstErrorField) {
+            setTimeout(() => {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+    });
+</script>
 {% endblock %}

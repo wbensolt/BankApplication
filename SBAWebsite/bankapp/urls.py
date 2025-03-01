@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView,LoanPredictionView, CustomLogoutView,
+from .views import (CustomLoginView,RegisterView,HomeView,DashboardView,ProjectOverviewView, CustomLogoutView,
                    MessageListView, MessageCreateView, MessageDetailView, NewsListView, NewsDetailView, NewsCreateView,NewsUpdateView,NewsDeleteView,
                    CannedMessageListView, ClientLoanRequestCreateView, ClientLoanRequestEditView, ClientLoanRequestPredictView, 
     ClientLoanRequestSubmitView, ClientLoanRequestListView,
@@ -14,7 +14,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('project/<int:project_id>/', ProjectOverviewView.as_view(), name='project_overview'),
-    path('loans/predict/', LoanPredictionView.as_view(), name='loan_predict'),
+    #path('loans/predict/', LoanPredictionView.as_view(), name='loan_predict'),
 
     # Authentication URLs
     path('login/', CustomLoginView.as_view(), name='login'),
