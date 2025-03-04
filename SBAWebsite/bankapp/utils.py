@@ -1,4 +1,7 @@
+import datetime
 from django.utils import timezone
+
+from .views import AuthService
 from .models import TokenModel
 import requests
 from django.conf import settings
@@ -50,17 +53,70 @@ def get_service_account_token():
 
 
 import sqlite3
+import os
+from dotenv import load_dotenv
 
-def get_jwt_token(user_id):
-    db_path = "db.sqlite3"
+# Charger les variables d'environnement depuis le fichier .env
+
+
+def get_jwt_token():
+    load_dotenv()
+    db_path = os.getenv("DB_PATH", "db.sqlite3")  # Utilise la valeur du .env ou "db.sqlite3" par défaut
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-
+    # Récupérer les valeurs depuis le fichier .env
+    password = os.getenv("DEFAULT_PASSWORD")
+    usern = os.getenv("username_")
+    email = os.getenv("EMAIL")
+    is_superuser = 0  # Valeur par défaut (False en SQLite)
+    is_staff = 0  # Ajout de is_staff pour éviter d'autres erreurs
+    first_name = os.getenv("FIRST_NAME")  # Valeur par défaut pour first_name
+    last_name = os.getenv("LAST_NAME")  # Valeur par défaut pour last_name
+    date_joined = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Date d'inscription actuelle
+    role = os.getenv("ROLE", "user")  # Ajout du rôle par défaut
+    is_active = 1  # L'utilisateur est actif par défaut
+    print("userrrrrr",usern, password,email)
     try:
+        # Vérifier si l'utilisateur existe déjà
+        cursor.execute("SELECT id FROM bankapp_user WHERE username = ? AND email = ?", (usern, email))
+        user = cursor.fetchone()
+
+        if user:
+            user_id = user[0]
+        else:
+            # Insérer l'utilisateur s'il n'existe pas
+            cursor.execute(
+                """INSERT INTO bankapp_user 
+                (username, email, password, first_name, last_name, is_superuser, is_staff, is_active, date_joined, role) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (usern, email, password, first_name, last_name, is_superuser, is_staff, is_active, date_joined, role)
+            )
+            conn.commit()
+            user_id = cursor.lastrowid  # Récupérer l'ID du nouvel utilisateur
+            from django.db import connection
+            db = connection
+            auth_service = AuthService(db)
+            try:
+                response = auth_service.activate_user_and_fetch_token(email, password)
+                print(response)  # Affichez le résultat dans les logs
+            except Exception as e:
+                print(f"Erreur lors de l'activation : {e}")
+
+        # Récupérer le token de l'utilisateur
         cursor.execute("SELECT token FROM bankapp_tokenmodel WHERE user_id = ?", (user_id,))
         token = cursor.fetchone()
-        print(f"token récupéré : {token[0]}")
-        return token[0] if token else None  # Retourne le token ou None s'il n'existe pas
+
+        if token:
+            print(f"Token récupéré : {token[0]}")
+            return token[0]
+        else:
+            print("Aucun token trouvé pour cet utilisateur.")
+            return None
+
+    except sqlite3.Error as e:
+        print(f"Erreur SQLite : {e}")
+        return None
+
     finally:
         conn.close()
