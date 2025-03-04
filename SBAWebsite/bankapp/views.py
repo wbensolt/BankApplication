@@ -340,7 +340,7 @@ from django.conf import settings
 class AuthService:
     def __init__(self, db):
         self.db = db  # Cela doit être une instance de la session Django ORM
-        self.token_check_interval = 1800  # 30 minutes
+        self.token_check_interval = 86400#1800  # 30 minutes
         self.token_thread = None
 
     def start_token_refresh_timer(self, user: User):
@@ -385,7 +385,7 @@ class AuthService:
             raise HTTPException(status_code=500, detail="Échec de la récupération du token FastAPI")
         
         token_data = response.json()
-        return token_data.get("access_token"), 1800  # 30 minutes de validité
+        return token_data.get("access_token"), 86400  # 30 minutes de validité
 
     def get_valid_token(self, user: User):
         token_obj = TokenModel.objects.filter(user=user).first()
@@ -394,7 +394,7 @@ class AuthService:
             access_token, _ = self._request_new_token(user.email, user.password)  # Utiliser le mot de passe de l'utilisateur
             token_obj, created = TokenModel.objects.update_or_create(
                 user=user,
-                defaults={"token": access_token, "expires_at": timezone.now() + timedelta(seconds=1800)}  # Mettre à jour l'expiration
+                defaults={"token": access_token, "expires_at": timezone.now() + timedelta(seconds=86400)}  # Mettre à jour l'expiration
             )
         
         return token_obj.token

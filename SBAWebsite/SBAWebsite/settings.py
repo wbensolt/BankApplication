@@ -167,4 +167,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # FAST API connexion
-FASTAPI_URL = "http://localhost:8001"  # Exemple d'URL, ajustez-la selon votre configuration
+FASTAPI_URL = "http://localhost:8000"  # Exemple d'URL, ajustez-la selon votre configuration
