@@ -48,3 +48,19 @@ def get_service_account_token():
         print(f"Token Retrieval Error: {str(e)}")
         return None
 
+
+import sqlite3
+
+def get_jwt_token(user_id):
+    db_path = "db.sqlite3"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+
+    try:
+        cursor.execute("SELECT token FROM bankapp_tokenmodel WHERE user_id = ?", (user_id,))
+        token = cursor.fetchone()
+        print(f"token récupéré : {token[0]}")
+        return token[0] if token else None  # Retourne le token ou None s'il n'existe pas
+    finally:
+        conn.close()
