@@ -1,4 +1,7 @@
 # Standard Libraries
+import os
+import time
+from dotenv import load_dotenv
 import requests
 from datetime import datetime, timedelta
 
@@ -356,7 +359,7 @@ class CannedMessageListView(View):
 
 ##### FASTAPI CONNEXION
 import threading
-import time
+import datetime
 from datetime import timedelta
 from fastapi import HTTPException
 from django.utils import timezone
@@ -385,11 +388,42 @@ class AuthService:
                 print(f"Erreur lors du rafraîchissement du token: {e.detail}")
 
     def activate_user_and_fetch_token(self, email: str, password: str):
+        # Récupérer les valeurs depuis le fichier .env
+        load_dotenv()
+
+        db_path = os.getenv("DB_PATH")
+        password = os.getenv("DEFAULT_PASSWORD")
+        username = os.getenv("USERNAME")
+        email = os.getenv("EMAIL")
+        is_superuser = 0  # Valeur par défaut (False en SQLite)
+        is_staff = 0  # Ajout de is_staff pour éviter d'autres erreurs
+        first_name = os.getenv("FIRST_NAME")
+        last_name = os.getenv("LAST_NAME")
+        date_joined = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Date d'inscription actuelle
+        role = os.getenv("ROLE", "user")  # Valeur par défaut pour le rôle
+        is_active = 1  # L'utilisateur est actif par défaut
+
         try:
+            # Vérifier si l'utilisateur existe
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-
+            # Si l'utilisateur n'existe pas, créer un utilisateur avec les informations du fichier .env
+            user = User.objects.create(
+            email=email,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            password=password,  # Hachage du mot de passe
+            is_superuser=is_superuser,
+            is_staff=is_staff,
+            date_joined=date_joined,
+            is_active=is_active,
+            role=role,
+            )
+            user.save()  # Enregistrer le nouvel utilisateur
+            print(f"Nouvel utilisateur créé : {user.username}")
+            
+        # Une fois l'utilisateur trouvé ou créé, récupérer le token
         access_token, expires_at = self._request_new_token(user.email, password)
         
         # Convertir expires_at en datetime pour le modèle Django
@@ -403,7 +437,7 @@ class AuthService:
 
         self.start_token_refresh_timer(user)
         return {"message": "Activation réussie. Vous pouvez maintenant vous connecter.", "access_token": access_token}
-
+        
     def _request_new_token(self, email: str, password: str):
         fastapi_url = settings.FASTAPI_URL + "/auth/login"
         response = requests.post(fastapi_url, data={"email": email, "password": password})
@@ -679,9 +713,7 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
 
         # ✅ Get Service Account Token (using hardcoded credentials)
         
-        #token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBbnRvaW5lLlNlY3VyZUJhbmtAdGVzdC5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0MTEwMzg1MH0.enkxx7dlYmvXSMUWHnZuY5U_IrSXQ-yY7acEU098-5A"
-        user_id = 3 # Récupération de l'ID utilisateur Django
-        token = get_jwt_token(user_id)  # Récupération du token
+        token = get_jwt_token()  # Récupération du token
         print(token)
         if not token:
             messages.error(request, "Failed to retrieve a valid token. Please try again later.")

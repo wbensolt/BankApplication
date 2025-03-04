@@ -1,3 +1,4 @@
+import os
 from django.apps import AppConfig
 
 
@@ -12,12 +13,12 @@ class BankappConfig(AppConfig):
             from django.db import connection
 
             def run_activation():
-                email = "Antoine.SecureBank@test.com"  # Remplacez par l'email réel
-                password = "motdepassefort"      # Remplacez par le mot de passe réel
+                password = os.getenv("DEFAULT_PASSWORD")
+                email = os.getenv("EMAIL")
                 db = connection
                 auth_service = AuthService(db)
                 try:
-                    response = auth_service.activate_user_and_fetch_token(email, password)
+                    response = "er"#auth_service.activate_user_and_fetch_token(email, password)
                     print(response)  # Affichez le résultat dans les logs
                 except Exception as e:
                     print(f"Erreur lors de l'activation : {e}")
