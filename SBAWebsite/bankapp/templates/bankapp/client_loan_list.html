@@ -1,0 +1,166 @@
+{% extends "bankapp/client_dashboard.html" %}
+{% load static %}
+
+{% block title %}Your Loan Requests{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100" x-data="{ sidebarOpen: false }">
+      <!-- Sidebar -->
+      <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-20"
+      :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:translate-x-0': true}">
+      <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
+          <div class="flex items-center">
+              <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
+              <span class="ml-2 text-xl font-semibold text-white">Client Portal</span>
+          </div>
+          <button @click="sidebarOpen = false" class="lg:hidden">
+              <i data-lucide="x" class="h-6 w-6 text-white"></i>
+          </button>
+      </div>
+      <nav class="mt-4">
+          <a href="{% url 'client_dashboard' %}"
+              class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+              <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+              <span class="mx-4">Dashboard</span>
+          </a>
+          <a href="{% url 'client_loan_list' %}"
+              class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
+              <i data-lucide="file-text" class="h-5 w-5"></i>
+              <span class="mx-4">My Loans</span>
+          </a>
+          <a href="{% url 'client_messages_list' %}" 
+              class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+              <i data-lucide="message-square" class="h-5 w-5"></i>
+              <span class="mx-4">Messages</span>
+          </a>
+          <a href="{% url 'client_news_list' %}"
+              class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+              <i data-lucide="newspaper" class="h-5 w-5"></i>
+              <span class="mx-4">Bank News</span>
+          </a>
+      </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="lg:pl-64">
+      <!-- Top Navigation -->
+      <div class="bg-white shadow-sm">
+          <div class="flex items-center justify-between h-16 px-4">
+              <button @click="sidebarOpen = true" class="lg:hidden">
+                  <i data-lucide="menu" class="h-6 w-6"></i>
+              </button>
+              <div class="flex items-center">
+                  <span class="text-sm text-gray-600">Welcome back,</span>
+                  <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
+              </div>
+          </div>
+      </div>
+
+<div class="p-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Your Loan Requests</h1>
+                <p class="mt-2 text-sm text-gray-600">Manage your loan applications and predictions.</p>
+            </div>
+            <a href="{% url 'client_loan_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+                Create New Loan Request
+            </a>
+        </div>
+
+        <div class="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
+            {% if loan_requests %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prediction</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for loan in loan_requests %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">#{{ loan.id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.created_at|date:"M d, Y" }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ loan.gr_appv|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if loan.status == 'approved' %}
+                                                bg-green-100 text-green-800
+                                            {% elif loan.status == 'pending' %}
+                                                bg-yellow-100 text-yellow-800
+                                            {% elif loan.status == 'rejected' %}
+                                                bg-red-100 text-red-800
+                                            {% else %}
+                                                bg-gray-100 text-gray-800
+                                            {% endif %}">
+                                            {{ loan.status|title }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {% if loan.prediction_result %}
+                                            {% if loan.prediction_result == 'pif' %}
+                                                <span class="text-green-600 font-medium">Likely to be approved</span>
+                                            {% else %}
+                                                <span class="text-red-600 font-medium">May need revision</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-gray-400">Not predicted yet</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex space-x-3">
+                                            <a href="{% url 'client_loan_edit' loan.id %}" class="text-blue-600 hover:text-blue-900">
+                                                <i data-lucide="edit" class="h-4 w-4 inline-block"></i>
+                                                <span>Edit</span>
+                                            </a>
+                                            <form action="{% url 'client_loan_predict' loan.id %}" method="post" class="inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="text-green-600 hover:text-green-900">
+                                                    <i data-lucide="calculator" class="h-4 w-4 inline-block"></i>
+                                                    <span>Predict</span>
+                                                </button>
+                                            </form>
+                                            {% if loan.prediction_result == 'pif' and loan.status == 'draft' %}
+                                                <form action="{% url 'client_loan_submit' loan.id %}" method="post" class="inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="text-indigo-600 hover:text-indigo-900">
+                                                        <i data-lucide="send" class="h-4 w-4 inline-block"></i>
+                                                        <span>Submit</span>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-8 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                        <i data-lucide="file-text" class="h-6 w-6 text-blue-600"></i>
+                    </div>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No loan requests</h3>
+                    <p class="mt-1 text-sm text-gray-500">Get started by creating a new loan request.</p>
+                    <div class="mt-6">
+                        <a href="{% url 'client_loan_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i data-lucide="plus" class="h-4 w-4 mr-2"></i>
+                            Apply for a Loan
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+/<div>
+{% endblock %}

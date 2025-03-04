@@ -1,0 +1,179 @@
+{% extends "bankapp/base.html" %}
+
+{% block title %}SecureBank - Loan Prediction Result{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100" x-data="{ sidebarOpen: false }">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-20"
+        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:translate-x-0': true}">
+        <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
+            <div class="flex items-center">
+                <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
+                <span class="ml-2 text-xl font-semibold text-white">Client Portal</span>
+            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden">
+                <i data-lucide="x" class="h-6 w-6 text-white"></i>
+            </button>
+        </div>
+        <nav class="mt-4">
+            <a href="{% url 'client_dashboard' %}"
+                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                <span class="mx-4">Dashboard</span>
+            </a>
+            <a href="{% url 'client_loan_list' %}"
+                class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
+                <i data-lucide="file-text" class="h-5 w-5"></i>
+                <span class="mx-4">My Loans</span>
+            </a>
+            <a href="{% url 'client_messages_list' %}" 
+                class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <i data-lucide="message-square" class="h-5 w-5"></i>
+                <span class="mx-4">Messages</span>
+            </a>
+            <a href="{% url 'client_news_list' %}"
+                class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <i data-lucide="newspaper" class="h-5 w-5"></i>
+                <span class="mx-4">Bank News</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:pl-64">
+        <!-- Top Navigation -->
+        <div class="bg-white shadow-sm">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button @click="sidebarOpen = true" class="lg:hidden">
+                    <i data-lucide="menu" class="h-6 w-6"></i>
+                </button>
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-600">Welcome back,</span>
+                    <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
+                </div>
+                <div>
+                    <a href="{% url 'logout' %}" class="text-sm text-gray-600 hover:text-gray-900">
+                        <i data-lucide="log-out" class="h-5 w-5 inline-block align-text-bottom"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Result Content -->
+        <div class="p-6">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-xl font-semibold text-gray-900">Loan Prediction Result</h2>
+                </div>
+                
+                <div class="p-6">
+                    <!-- Prediction Result -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-center mb-6">
+                            {% if prediction_result == 'pif' %}
+                            <div class="p-4 rounded-full bg-green-100">
+                                <i data-lucide="check-circle" class="h-16 w-16 text-green-600"></i>
+                            </div>
+                            {% else %}
+                            <div class="p-4 rounded-full bg-red-100">
+                                <i data-lucide="x-circle" class="h-16 w-16 text-red-600"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-center">
+                            <h3 class="text-2xl font-bold mb-2">
+                                {% if prediction_result == 'pif' %}
+                                Positive Prediction
+                                {% else %}
+                                Negative Prediction
+                                {% endif %}
+                            </h3>
+                            
+                            <p class="text-lg text-gray-700 mb-4">
+                                {% if prediction_result == 'pif' %}
+                                Our model predicts this loan will be <span class="font-semibold text-green-600">Paid in Full</span>
+                                {% else %}
+                                Our model predicts this loan may be <span class="font-semibold text-red-600">Charged Off</span>
+                                {% endif %}
+                            </p>
+                            
+                            <div class="inline-block bg-gray-100 rounded-lg px-4 py-3 text-gray-700">
+                                <p>
+                                    {% if prediction_result == 'pif' %}
+                                    This prediction suggests a lower risk profile for this loan application.
+                                    {% else %}
+                                    This prediction suggests a higher risk profile for this loan application.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loan Details Summary -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Loan Application Summary</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-500">Loan Amount</p>
+                                <p class="text-lg font-semibold">${{ loan_request.gr_appv }}</p>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-500">Term</p>
+                                <p class="text-lg font-semibold">{{ loan_request.term }} months</p>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-500">Status</p>
+                                <p class="text-lg font-semibold">
+                                    {% if loan_request.status == 'draft' %}
+                                    Draft
+                                    {% elif loan_request.status == 'pending' %}
+                                    Pending Review
+                                    {% elif loan_request.status == 'approved' %}
+                                    Approved
+                                    {% elif loan_request.status == 'rejected' %}
+                                    Rejected
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="mt-8 flex justify-between">
+                        <div>
+                            <a href="{% url 'client_loan_edit' loan_request.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i data-lucide="edit" class="h-4 w-4 mr-2"></i>
+                                Edit Application
+                            </a>
+                            <a href="{% url 'client_loan_list' %}" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i data-lucide="list" class="h-4 w-4 mr-2"></i>
+                                Back to Loan List
+                            </a>
+                        </div>
+                        
+                        <form method="post" action="{% url 'client_loan_submit' loan_request.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white {% if prediction_result == 'pif' %}bg-green-600 hover:bg-green-700{% else %}bg-red-600 hover:bg-red-700{% endif %} focus:outline-none focus:ring-2 focus:ring-offset-2 {% if prediction_result == 'pif' %}focus:ring-green-500{% else %}focus:ring-red-500{% endif %}">
+                                <i data-lucide="send" class="h-4 w-4 mr-2"></i>
+                                Submit for Review
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Disclaimer -->
+                    <div class="mt-8 text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
+                        <p class="font-medium mb-1">Disclaimer:</p>
+                        <p>This prediction is based on a machine learning model and should be used as a guide only. The final decision will be made by your banking advisor after reviewing your complete application.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

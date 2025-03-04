@@ -31,6 +31,86 @@
         opacity: 1;
     }
 </style>
+<!-- Sidebar based on user role -->
+<div class="min-h-[calc(100vh-4rem)] bg-gray-100" x-data="{ sidebarOpen: false }">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-20"
+        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:translate-x-0': true}">
+        <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
+            <div class="flex items-center">
+                <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
+                <span class="ml-2 text-xl font-semibold text-white">
+                    {% if user_role == 'client' %}Client Portal{% else %}Advisor Portal{% endif %}
+                </span>
+            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden">
+                <i data-lucide="x" class="h-6 w-6 text-white"></i>
+            </button>
+        </div>
+        <nav class="mt-4">
+            {% if user_role == 'client' %}
+                <!-- Client Navigation -->
+                <a href="{% url 'client_dashboard' %}"
+                    class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                    <span class="mx-4">Dashboard</span>
+                </a>
+                <a href="{% url 'client_loan_list' %}"
+                    class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                    <span class="mx-4">My Loans</span>
+                </a>
+                <a href="{% url 'client_messages_list' %}" 
+                    class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
+                    <i data-lucide="message-square" class="h-5 w-5"></i>
+                    <span class="mx-4">Messages</span>
+                </a>
+                <a href="{% url 'client_news_list' %}"
+                    class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                    <i data-lucide="newspaper" class="h-5 w-5"></i>
+                    <span class="mx-4">Bank News</span>
+                </a>
+            {% else %}
+                <!-- Advisor Navigation -->
+                <a href="{% url 'advisor_dashboard' %}"
+                    class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                    <span class="mx-4">Dashboard</span>
+                </a>
+                <a href="{% url 'advisor_loan_list' %}"
+                    class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                    <span class="mx-4">Loan Applications</span>
+                </a>
+                <a href="{% url 'advisor_messages_list' %}" 
+                    class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
+                    <i data-lucide="message-square" class="h-5 w-5"></i>
+                    <span class="mx-4">Messages</span>
+                </a>
+                <a href="{% url 'advisor_news_list' %}"
+                    class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                    <i data-lucide="newspaper" class="h-5 w-5"></i>
+                    <span class="mx-4">News Management</span>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:pl-64">
+        <!-- Top Navigation -->
+        <div class="bg-white shadow-sm">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button @click="sidebarOpen = true" class="lg:hidden">
+                    <i data-lucide="menu" class="h-6 w-6"></i>
+                </button>
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-600">Welcome back,</span>
+                    <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
+                </div>
+            </div>
+        </div>
+
     
 <div class="min-h-[calc(100vh-4rem)] bg-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -341,7 +421,8 @@
         </div>
     </div>
 </div>
-
+</div>
+</div>
 <script>
 // Function to scroll to the bottom of the messages container
 function scrollToBottom() {

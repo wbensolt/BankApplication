@@ -10,7 +10,27 @@
     .toggle-icon.rotate-0 {
         transform: rotate(0deg);
     }
-    </style>
+    .category-folder {
+        transition: all 0.2s ease-in-out;
+    }
+    .category-folder:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+    .category-folder.active {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-left: 3px solid #3b82f6;
+    }
+    .category-messages {
+        transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+    .category-messages.open {
+        max-height: 1000px;
+        opacity: 1;
+    }
+</style>
     
 <div class="min-h-[calc(100vh-4rem)] bg-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -280,7 +300,7 @@
                 <!-- Canned Messages Sidebar (Visible for Advisors Only) -->
                 {% if active_conversation and user_role == 'advisor' %}
                 <div class="hidden lg:block lg:col-span-1 border-l border-gray-200 bg-white">
-                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
                         <h3 class="text-md font-semibold text-gray-900">Quick Responses</h3>
                         <p class="text-xs text-gray-500 mt-1">Pre-written messages for common inquiries</p>
                     </div>
@@ -289,19 +309,24 @@
                     <div class="px-4 py-3 border-b border-gray-200">
                         <div class="relative">
                             <input type="text" id="search-canned-messages" placeholder="Search responses..." 
-                                class="w-full rounded-md border border-gray-300 pl-9 pr-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                class="w-full rounded-md border border-gray-300 pl-9 pr-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
                             </div>
                         </div>
                     </div>
+                    
                     <!-- Links for Open All and Close All -->
-                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                        <a href="#" id="open-all-categories" class="text-sm text-blue-600 hover:text-blue-800 mr-4">Open All</a>
-                        <a href="#" id="close-all-categories" class="text-sm text-blue-600 hover:text-blue-800">Close All</a>
+                    <div class="px-4 py-2 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-500">CATEGORIES</span>
+                        <div>
+                            <a href="#" id="open-all-categories" class="text-xs text-blue-600 hover:text-blue-800 mr-3">Open All</a>
+                            <a href="#" id="close-all-categories" class="text-xs text-blue-600 hover:text-blue-800">Close All</a>
+                        </div>
                     </div>
+                    
                     <!-- Canned Messages Container -->
-                    <div id="canned-messages-container" class="overflow-y-auto h-[calc(100vh-16rem)] p-4 space-y-4">
+                    <div id="canned-messages-container" class="overflow-y-auto h-[calc(100vh-16rem)] divide-y divide-gray-100">
                         <!-- Canned messages will be loaded here -->
                         <div class="flex items-center justify-center h-32">
                             <div class="text-center">
@@ -349,41 +374,54 @@ function loadCannedMessages() {
             
             if (data.canned_messages && data.canned_messages.length > 0) {
                 // Group messages by category
-                data.canned_messages.forEach(category => {
+                data.canned_messages.forEach((category, index) => {
                     // Create category section
                     let categorySection = document.createElement('div');
-                    categorySection.className = "mb-4";
+                    categorySection.className = "category-section";
 
                     // Create category header with toggle icon
                     let categoryHeader = document.createElement('div');
-                    categoryHeader.className = "flex items-center justify-between mb-2 cursor-pointer";
+                    categoryHeader.className = "category-folder flex items-center px-4 py-3 cursor-pointer";
                     categoryHeader.setAttribute('data-category', category.category);
-                    categoryHeader.addEventListener('click', function() {
-                        toggleCategoryMessages(this);
-                    });
-
-                    // Chevron icon for toggle
-                    let toggleIcon = document.createElement('span');
-                    toggleIcon.className = "toggle-icon h-4 w-4 inline-block transform transition-transform rotate-90 mr-2";
-                    toggleIcon.innerHTML = '<i data-lucide="chevron-right" class="h-4 w-4"></i>';
-                    categoryHeader.appendChild(toggleIcon);
-
+                    
+                    // Add folder icon
+                    let folderIcon = document.createElement('div');
+                    folderIcon.className = "flex-shrink-0 mr-3";
+                    folderIcon.innerHTML = `<i data-lucide="folder" class="h-5 w-5 text-blue-500"></i>`;
+                    categoryHeader.appendChild(folderIcon);
+                    
                     // Category title
                     let categoryTitle = document.createElement('h4');
                     categoryTitle.textContent = category.category;
-                    categoryTitle.className = "text-sm font-medium text-gray-700";
+                    categoryTitle.className = "text-sm font-medium text-gray-800 flex-1";
                     categoryHeader.appendChild(categoryTitle);
-
+                    
+                    // Message count badge
+                    let countBadge = document.createElement('span');
+                    countBadge.className = "bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full";
+                    countBadge.textContent = category.messages.length;
+                    categoryHeader.appendChild(countBadge);
+                    
+                    // Chevron icon for toggle
+                    let toggleIcon = document.createElement('span');
+                    toggleIcon.className = "toggle-icon ml-2 h-4 w-4 inline-block transform transition-transform rotate-90";
+                    toggleIcon.innerHTML = '<i data-lucide="chevron-right" class="h-4 w-4 text-gray-400"></i>';
+                    categoryHeader.appendChild(toggleIcon);
+                    
+                    // Add event listener to toggle category
+                    categoryHeader.addEventListener('click', function() {
+                        toggleCategoryMessages(this);
+                    });
+                    
                     categorySection.appendChild(categoryHeader);
 
                     // Create messages for this category
                     let messagesList = document.createElement('div');
-                    messagesList.className = "category-messages space-y-2 pl-7";
-                    messagesList.style.display = "none"; // Default to hidden
-
+                    messagesList.className = "category-messages pl-12 pr-4 pb-2 bg-gray-50";
+                    
                     category.messages.forEach(msg => {
                         let messageDiv = document.createElement('div');
-                        messageDiv.className = "canned-message bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-blue-50 transition-colors";
+                        messageDiv.className = "canned-message bg-white border border-gray-200 rounded-lg p-3 my-2 cursor-pointer hover:bg-blue-50 transition-colors shadow-sm";
                         
                         let titleElement = document.createElement('div');
                         titleElement.className = "text-sm font-medium text-gray-900 mb-1";
@@ -417,6 +455,13 @@ function loadCannedMessages() {
 
                     categorySection.appendChild(messagesList);
                     container.appendChild(categorySection);
+                    
+                    // Auto-open the first category
+                    if (index === 0) {
+                        setTimeout(() => {
+                            toggleCategoryMessages(categoryHeader);
+                        }, 100);
+                    }
                 });
 
                 // Initialize Lucide icons for dynamically added elements
@@ -461,33 +506,101 @@ function loadCannedMessages() {
 // Function to toggle visibility of a category's messages
 function toggleCategoryMessages(categoryHeader) {
     const messagesList = categoryHeader.nextElementSibling;
-    if (messagesList.style.display === "none") {
-        messagesList.style.display = "block";
-        categoryHeader.querySelector('.toggle-icon').classList.replace('rotate-90', 'rotate-0');
+    const toggleIcon = categoryHeader.querySelector('.toggle-icon');
+    
+    if (toggleIcon.classList.contains('rotate-90')) {
+        // Opening the category
+        messagesList.classList.add('open');
+        toggleIcon.classList.replace('rotate-90', 'rotate-0');
+        categoryHeader.classList.add('active');
+        
+        // Change folder icon to open folder
+        const folderIcon = categoryHeader.querySelector('[data-lucide="folder"]');
+        if (folderIcon) {
+            folderIcon.setAttribute('data-lucide', 'folder-open');
+            // Re-initialize the icon
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons({
+                    icons: {
+                        'folder-open': true
+                    }
+                });
+            }
+        }
     } else {
-        messagesList.style.display = "none";
-        categoryHeader.querySelector('.toggle-icon').classList.replace('rotate-0', 'rotate-90');
+        // Closing the category
+        messagesList.classList.remove('open');
+        toggleIcon.classList.replace('rotate-0', 'rotate-90');
+        categoryHeader.classList.remove('active');
+        
+        // Change folder icon back to closed folder
+        const folderIcon = categoryHeader.querySelector('[data-lucide="folder-open"]');
+        if (folderIcon) {
+            folderIcon.setAttribute('data-lucide', 'folder');
+            // Re-initialize the icon
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons({
+                    icons: {
+                        'folder': true
+                    }
+                });
+            }
+        }
     }
 }
 
 // Function to open all categories
 function openAllCategories() {
-    document.querySelectorAll('.category-messages').forEach(messagesList => {
-        messagesList.style.display = "block";
+    document.querySelectorAll('.category-folder').forEach(categoryHeader => {
+        const messagesList = categoryHeader.nextElementSibling;
+        const toggleIcon = categoryHeader.querySelector('.toggle-icon');
+        
+        messagesList.classList.add('open');
+        toggleIcon.classList.replace('rotate-90', 'rotate-0');
+        categoryHeader.classList.add('active');
+        
+        // Change folder icon to open folder
+        const folderIcon = categoryHeader.querySelector('[data-lucide="folder"]');
+        if (folderIcon) {
+            folderIcon.setAttribute('data-lucide', 'folder-open');
+        }
     });
-    document.querySelectorAll('.toggle-icon').forEach(icon => {
-        icon.classList.replace('rotate-90', 'rotate-0');
-    });
+    
+    // Re-initialize all folder icons
+    if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+        lucide.createIcons({
+            icons: {
+                'folder-open': true
+            }
+        });
+    }
 }
 
 // Function to close all categories
 function closeAllCategories() {
-    document.querySelectorAll('.category-messages').forEach(messagesList => {
-        messagesList.style.display = "none";
+    document.querySelectorAll('.category-folder').forEach(categoryHeader => {
+        const messagesList = categoryHeader.nextElementSibling;
+        const toggleIcon = categoryHeader.querySelector('.toggle-icon');
+        
+        messagesList.classList.remove('open');
+        toggleIcon.classList.replace('rotate-0', 'rotate-90');
+        categoryHeader.classList.remove('active');
+        
+        // Change folder icon back to closed folder
+        const folderIcon = categoryHeader.querySelector('[data-lucide="folder-open"]');
+        if (folderIcon) {
+            folderIcon.setAttribute('data-lucide', 'folder');
+        }
     });
-    document.querySelectorAll('.toggle-icon').forEach(icon => {
-        icon.classList.replace('rotate-0', 'rotate-90');
-    });
+    
+    // Re-initialize all folder icons
+    if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+        lucide.createIcons({
+            icons: {
+                'folder': true
+            }
+        });
+    }
 }
 
 // Attach event listeners for Open All and Close All links
@@ -518,6 +631,31 @@ function searchCannedMessages() {
     let query = document.getElementById('search-canned-messages').value.toLowerCase();
     let messages = document.querySelectorAll('.canned-message');
     let hasResults = false;
+    
+    // If search is empty, restore original view
+    if (!query) {
+        closeAllCategories();
+        document.querySelectorAll('.category-section').forEach(section => {
+            section.style.display = 'block';
+        });
+        messages.forEach(message => {
+            message.style.display = 'block';
+            
+            // Reset content
+            let title = message.querySelector('.text-sm');
+            let content = message.querySelector('.text-xs');
+            
+            title.innerHTML = message.getAttribute('data-title');
+            content.innerHTML = message.getAttribute('data-content').length > 100 
+                ? message.getAttribute('data-content').substring(0, 100) + '...' 
+                : message.getAttribute('data-content');
+        });
+        
+        let noResultsMsg = document.getElementById('no-results-message');
+        if (noResultsMsg) noResultsMsg.style.display = 'none';
+        
+        return;
+    }
 
     messages.forEach(function(message) {
         let fullText = message.getAttribute('data-fulltext');
@@ -537,26 +675,49 @@ function searchCannedMessages() {
                 ? message.getAttribute('data-content').substring(0, 100) + '...' 
                 : message.getAttribute('data-content');
             
-            if (query) {
-                // Highlight matches
-                let regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                title.innerHTML = title.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
-                content.innerHTML = content.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
-            }
+            // Highlight matches
+            let regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            title.innerHTML = title.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
+            content.innerHTML = content.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-0.5 rounded">$1</mark>');
         } else {
             message.style.display = 'none';
         }
     });
     
     // Show parent categories only if they have visible children
-    document.querySelectorAll('#canned-messages-container > div').forEach(category => {
-        let hasVisibleMessages = Array.from(category.querySelectorAll('.canned-message')).some(msg => msg.style.display !== 'none');
-        category.style.display = hasVisibleMessages ? 'block' : 'none';
+    document.querySelectorAll('.category-section').forEach(section => {
+        let hasVisibleMessages = Array.from(section.querySelectorAll('.canned-message')).some(msg => msg.style.display !== 'none');
+        section.style.display = hasVisibleMessages ? 'block' : 'none';
+        
+        // Auto-open categories with results
+        if (hasVisibleMessages) {
+            const categoryHeader = section.querySelector('.category-folder');
+            const messagesList = categoryHeader.nextElementSibling;
+            const toggleIcon = categoryHeader.querySelector('.toggle-icon');
+            
+            messagesList.classList.add('open');
+            toggleIcon.classList.replace('rotate-90', 'rotate-0');
+            categoryHeader.classList.add('active');
+            
+            // Change folder icon to open folder
+            const folderIcon = categoryHeader.querySelector('[data-lucide="folder"]');
+            if (folderIcon) {
+                folderIcon.setAttribute('data-lucide', 'folder-open');
+                // Re-initialize the icon
+                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                    lucide.createIcons({
+                        icons: {
+                            'folder-open': true
+                        }
+                    });
+                }
+            }
+        }
     });
     
     // Show no results message if needed
     let noResultsMsg = document.getElementById('no-results-message');
-    if (!hasResults && query) {
+    if (!hasResults) {
         if (!noResultsMsg) {
             noResultsMsg = document.createElement('div');
             noResultsMsg.id = 'no-results-message';
