@@ -668,7 +668,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import LoanRequest
-from .utils import get_service_account_token  # Import the updated function
+from .utils import get_jwt_token  # Import the updated function
 
 class ClientLoanRequestPredictView(LoginRequiredMixin, View):
     template_name = 'bankapp/loan_prediction_result.html'
@@ -678,8 +678,11 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
         loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
 
         # ✅ Get Service Account Token (using hardcoded credentials)
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBbnRvaW5lLlNlY3VyZUJhbmtAdGVzdC5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0MDc5ODAwMX0.KBHr7C74qPR6MassT0abi1xp29gQll3H8xn4C6THgBs"
         
+        #token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBbnRvaW5lLlNlY3VyZUJhbmtAdGVzdC5jb20iLCJyb2xlIjoidXNlciIsImV4cCI6MTc0MTEwMzg1MH0.enkxx7dlYmvXSMUWHnZuY5U_IrSXQ-yY7acEU098-5A"
+        user_id = 3 # Récupération de l'ID utilisateur Django
+        token = get_jwt_token(user_id)  # Récupération du token
+        print(token)
         if not token:
             messages.error(request, "Failed to retrieve a valid token. Please try again later.")
             return redirect('client_loan_list')
