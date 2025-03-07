@@ -1,0 +1,150 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env
+.venv/
+# Ignore environment variables
+.env
+
+
+# Logs and databases
+*.log
+*.sqlite3
+db.sqlite3
+test.db
+
+# VS Code settings
+.vscode/
+
+# macOS system files
+.DS_Store
+
+# Python dependencies
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore compiled Python files
+*.egg-info/
+*.egg
+
+# Docker
+docker-compose.override.yml
+*.dockerignore
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Pytest cache
+.pytest_cache/
+
+# MyPy cache
+.mypy_cache/
+
+# IDE-specific files
+.idea/
+
+migrations/
+migrations/versions/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media
+staticfiles/
+
+# Environnements
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Logs
+logs/
+*.log
+
+# Base de données
+*.mdf
+*.ldf
+*.ndf
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Tests
+.coverage
+htmlcov/
+.tox/
+.nox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Migrations Django (optionnel, selon votre stratégie de gestion)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Fichiers de configuration locaux
+local_settings.py
+*.local
+
+# Fichiers temporaires
+*.swp
+*.swo
+*~ 

@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,13 +22,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-%iyebyj1+lyr-%h0ktd#&yvsh4s+2kohiqn7!q9p-t+_dsq7-f"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Configuration de la base de données MSSQL
+MSSQL_ENGINE = 'mssql'
+MSSQL_NAME = os.getenv('databasedj_')  # Nom de la base de données
+MSSQL_USER = os.getenv('usernamedj_')  # Nom d'utilisateur
+MSSQL_PASSWORD = os.getenv('passworddj_')  # Mot de passe
+MSSQL_HOST = os.getenv('serverdj_')  # Nom du serveur Azure SQL
+MSSQL_PORT = os.getenv('portdj_')  # Port (1433 par défaut pour Azure SQL)
 
-ALLOWED_HOSTS = []
+
+# Configuration de Django
+SECRET_KEY = os.getenv('SECRET_KEY_')  # Clé secrète pour Django
+DEBUG = os.getenv('DEBUG') == 'True'  # Mode debug (True ou False)
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')  # Liste des hôtes autorisés
+FASTAPI_URL = os.getenv('API_URL')  # URL de l'API FastAPI
 
 
 # Application definition
@@ -91,10 +101,33 @@ WSGI_APPLICATION = "SBAWebsite.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+"""DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sql_server',
+        'NAME': 'ta_base_django',
+        'USER': 'ton_utilisateur',
+        'PASSWORD': 'ton_mot_de_passe',
+        'HOST': 'tonserveur.database.windows.net',
+        'PORT': '1433',
+        'OPTIONS': {'driver': 'ODBC Driver 18 for SQL Server'},
+    }
+}"""
+
+# Configuration de la base de données
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': MSSQL_ENGINE,
+        'NAME': MSSQL_NAME,
+        'USER': MSSQL_USER,
+        'PASSWORD': MSSQL_PASSWORD,
+        'HOST': MSSQL_HOST,
+        'PORT': MSSQL_PORT,
+        'OPTIONS': {
+            'driver': 'ODBC Driver 18 for SQL Server',  # Utiliser le driver ODBC 18 pour SQL Server
+            'Encrypt': 'yes',  # Activer le chiffrement
+            'TrustServerCertificate': 'no',  # Ne pas faire confiance au certificat du serveur
+            'Connection Timeout': 30,  # Timeout de connexion
+        },
     }
 }
 
@@ -167,4 +200,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # FAST API connexion
-FASTAPI_URL = "http://localhost:8001"  # Exemple d'URL, ajustez-la selon votre configuration
+#FASTAPI_URL = "http://20.40.158.29:8000"  # Exemple d'URL, ajustez-la selon votre configuration
