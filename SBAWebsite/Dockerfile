@@ -34,17 +34,10 @@ COPY .env /app/.env
 # Installer Gunicorn
 RUN pip install gunicorn
 
-<<<<<<< HEAD
 RUN python manage.py collectstatic --noinput
 
-=======
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
 # Exposer le port 8001 (pour Django)
 EXPOSE 8001
 
 # Commande pour lancer l'application Django avec Gunicorn
-<<<<<<< HEAD
 CMD ["gunicorn", "--bind", "0.0.0.0:8001", "--log-level", "debug", "SBAWebsite.wsgi:application"]
-=======
-CMD ["gunicorn", "--bind", "0.0.0.0:8001", "SBAWebsite.wsgi:application"]
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912

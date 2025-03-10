@@ -169,11 +169,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context['pending_reviews_count'] = LoanRequest.objects.filter(client__in=paired_clients, status='pending').count()
             
             # Approved today
-<<<<<<< HEAD
             today = datetime.datetime.now().date()
-=======
-            today = datetime.now().date()
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
             context['approved_today_count'] = LoanRequest.objects.filter(
                 client__in=paired_clients, 
                 status='approved',
@@ -708,12 +704,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import LoanRequest
 from .utils import get_jwt_token  # Import the updated function
 
-<<<<<<< HEAD
 load_dotenv()
 FASTAPI_URL = os.getenv("API_URL")  # Valeur par défaut si API_URL n'est pas défini
 
-=======
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
 class ClientLoanRequestPredictView(LoginRequiredMixin, View):
     template_name = 'bankapp/loan_prediction_result.html'
     login_url = "login"  
@@ -721,7 +714,6 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
     def post(self, request, pk):
         loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
 
-<<<<<<< HEAD
         # ✅ Préparation des données pour FastAPI
         payload = {
             "State": loan_request.state,
@@ -757,52 +749,6 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
             prediction = response_data.get("prediction")
 
             print(f"Réponse de la prédiction : {prediction}")
-=======
-        # ✅ Get Service Account Token (using hardcoded credentials)
-        
-        token = get_jwt_token()  # Récupération du token
-        print(token)
-        if not token:
-            messages.error(request, "Failed to retrieve a valid token. Please try again later.")
-            return redirect('client_loan_list')
-
-        # ✅ Prepare data for FastAPI
-        payload = payload = {
-             "State": loan_request.state,
-             "Zip": loan_request.zip_code,
-             "BankState": loan_request.bank_state,
-             "ApprovalFY": int(loan_request.approval_fy),  # Ensure int
-            "Term": int(loan_request.term),               # Ensure int
-            "NoEmp": int(loan_request.no_emp),             # Ensure int
-            "NewExist": int(loan_request.new_exist),       # Ensure int (0 or 1)
-            "CreateJob": int(loan_request.create_job),     # Ensure int
-            "RetainedJob": int(loan_request.retained_job), # Ensure int
-            "FranchiseCode": int(loan_request.franchise_code),  # Ensure int (0 or 1)
-            "UrbanRural": int(loan_request.urban_rural),   # Ensure int (0, 1 or 2)
-            "RevLineCr": int(loan_request.rev_line_cr),    # Ensure int (0 or 1)
-            "LowDoc": int(loan_request.low_doc),           # Ensure int (0 or 1)
-            "DisbursementGross": float(loan_request.disbursement_gross),  # Ensure float
-            "GrAppv": float(loan_request.gr_appv),         # Ensure float
-            "ApprovalMonth": int(loan_request.approval_month), # Ensure int for month
-            "NAICS_CODE": loan_request.naics_code }
-        print("Payload sent to FastAPI:", payload)
-
-
-        # ✅ Set Headers
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        }
-
-        # ✅ Send request to FastAPI
-        fastapi_url = "http://localhost:8001/loans/predict"  # Adjust if needed
-        try:
-            response = requests.post(fastapi_url, json=payload, headers=headers)
-            response.raise_for_status()
-            
-            prediction = response.json().get("prediction", None)
-            print(f"Prediction Response: {prediction}")
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
 
             if prediction is not None:
                 loan_request.prediction_result = 'charged off' if prediction == 1 else 'pif'
@@ -814,7 +760,6 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
                 }
                 return render(request, self.template_name, context)
             else:
-<<<<<<< HEAD
                 messages.error(request, "Aucune prédiction retournée par le modèle.")
                 return redirect('client_loan_list')
 
@@ -827,22 +772,11 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
                 except Exception:
                     pass
             messages.error(request, error_message)
-=======
-                messages.error(request, "No prediction returned from the model.")
-                return redirect('client_loan_list')
-
-        except requests.exceptions.RequestException as e:
-            messages.error(request, f"API Error: {str(e)}")
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
             return redirect('client_loan_list')
 
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
 class ClientLoanRequestSubmitView(LoginRequiredMixin, View):
     def post(self, request, pk):
         loan_request = get_object_or_404(LoanRequest, pk=pk, client=request.user)
