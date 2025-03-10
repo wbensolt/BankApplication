@@ -135,6 +135,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.terraform/
 
 # Migrations Django (optionnel, selon votre stratégie de gestion)
 # */migrations/*.py
