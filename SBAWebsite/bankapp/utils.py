@@ -51,32 +51,62 @@ def get_service_account_token():
         print(f"Token Retrieval Error: {str(e)}")
         return None
 
-
-import sqlite3
 import os
+import datetime
+import pyodbc
+from django.contrib.auth.hashers import make_password
+from django.utils.crypto import get_random_string
 from dotenv import load_dotenv
 
-# Charger les variables d'environnement depuis le fichier .env
+def generate_token():
+    return get_random_string(length=32)  # Génère un token aléatoire de 32 caractères
 
+import os
+import datetime
+import pyodbc
+from django.contrib.auth.hashers import make_password
+from django.utils.crypto import get_random_string
+from dotenv import load_dotenv
+
+def generate_token():
+    return get_random_string(length=32)  # Génère un token aléatoire de 32 caractères
 
 def get_jwt_token():
+    # Charger les variables d'environnement
     load_dotenv()
-    db_path = os.getenv("DB_PATH", "db.sqlite3")  # Utilise la valeur du .env ou "db.sqlite3" par défaut
-    conn = sqlite3.connect(db_path)
+
+    # Récupérer les variables d'environnement pour la connexion à Azure SQL Database
+    db_host = os.getenv("serverdj_")  # Serveur Azure SQL
+    db_name = os.getenv("databasedj_")  # Nom de la base de données
+    db_user = os.getenv("usernamedj_")  # Nom d'utilisateur
+    db_password = os.getenv("passworddj_")  # Mot de passe
+    db_driver = os.getenv("driverdj_").replace("+", " ")  # Driver ODBC (remplace les "+" par des espaces)
+
+    # Connexion à Azure SQL Database
+    conn_str = f"DRIVER={{{db_driver}}};SERVER={db_host};DATABASE={db_name};UID={db_user};PWD={db_password}"
+    try:
+        conn = pyodbc.connect(conn_str)
+        print("Connexion à la base de données réussie.", flush=True)
+    except pyodbc.Error as e:
+        print(f"Erreur de connexion à la base de données : {e}", flush=True)
+        return None
+
     cursor = conn.cursor()
 
     # Récupérer les valeurs depuis le fichier .env
-    password = os.getenv("DEFAULT_PASSWORD")
+    password = make_password(os.getenv("DEFAULT_PASSWORD"))  # Hacher le mot de passe
     usern = os.getenv("username_")
     email = os.getenv("EMAIL")
-    is_superuser = 0  # Valeur par défaut (False en SQLite)
+    is_superuser = 0  # Valeur par défaut (False)
     is_staff = 0  # Ajout de is_staff pour éviter d'autres erreurs
-    first_name = os.getenv("FIRST_NAME")  # Valeur par défaut pour first_name
-    last_name = os.getenv("LAST_NAME")  # Valeur par défaut pour last_name
+    first_name = os.getenv("FIRST_NAME", "Admin")  # Valeur par défaut pour first_name
+    last_name = os.getenv("last_name", "Admin")  # Valeur par défaut pour last_name
     date_joined = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Date d'inscription actuelle
     role = os.getenv("ROLE", "user")  # Ajout du rôle par défaut
     is_active = 1  # L'utilisateur est actif par défaut
-    print("userrrrrr",usern, password,email)
+
+    print("Informations de l'utilisateur :", usern, password, email, flush=True)
+
     try:
         # Vérifier si l'utilisateur existe déjà
         cursor.execute("SELECT id FROM bankapp_user WHERE username = ? AND email = ?", (usern, email))
@@ -84,6 +114,7 @@ def get_jwt_token():
 
         if user:
             user_id = user[0]
+            print("Utilisateur existant trouvé. ID :", user_id, flush=True)
         else:
             # Insérer l'utilisateur s'il n'existe pas
             cursor.execute(
@@ -93,30 +124,49 @@ def get_jwt_token():
                 (usern, email, password, first_name, last_name, is_superuser, is_staff, is_active, date_joined, role)
             )
             conn.commit()
-            user_id = cursor.lastrowid  # Récupérer l'ID du nouvel utilisateur
+
+            # Récupérer l'ID du dernier enregistrement inséré
+            cursor.execute("SELECT SCOPE_IDENTITY()")
+            user_id = cursor.fetchone()[0]
+
+            if not user_id:
+                print("Erreur : L'utilisateur n'a pas été inséré.", flush=True)
+                return None
+            else:
+                print("Utilisateur inséré avec succès. ID :", user_id, flush=True)
+
+            # Activer l'utilisateur et récupérer le token
             from django.db import connection
             db = connection
             auth_service = AuthService(db)
             try:
-                response = auth_service.activate_user_and_fetch_token(email, password)
-                print(response)  # Affichez le résultat dans les logs
+                response = auth_service.activate_user_and_fetch_token(email, os.getenv("DEFAULT_PASSWORD"))
+                print("Réponse de l'activation :", response, flush=True)  # Affichez le résultat dans les logs
             except Exception as e:
-                print(f"Erreur lors de l'activation : {e}")
+                print(f"Erreur lors de l'activation : {e}", flush=True)
 
         # Récupérer le token de l'utilisateur
         cursor.execute("SELECT token FROM bankapp_tokenmodel WHERE user_id = ?", (user_id,))
         token = cursor.fetchone()
 
         if token:
-            print(f"Token récupéré : {token[0]}")
+            print(f"Token récupéré : {token[0]}", flush=True)
             return token[0]
         else:
-            print("Aucun token trouvé pour cet utilisateur.")
-            return None
+            # Générer et insérer un nouveau token
+            new_token = generate_token()
+            expires_at = datetime.datetime.now() + datetime.timedelta(days=1)  # Expiration dans 1 jour
+            cursor.execute(
+                "INSERT INTO bankapp_tokenmodel (user_id, token, expires_at) VALUES (?, ?, ?)",
+                (user_id, new_token, expires_at)
+            )
+            conn.commit()
+            print(f"Nouveau token généré et inséré : {new_token}", flush=True)
+            return new_token
 
-    except sqlite3.Error as e:
-        print(f"Erreur SQLite : {e}")
+    except Exception as e:
+        print(f"Erreur lors de la récupération ou de l'insertion du token : {e}", flush=True)
         return None
-
     finally:
+        cursor.close()
         conn.close()
