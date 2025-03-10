@@ -68,7 +68,10 @@ INTERNAL_IPS = [
 MIDDLEWARE = [
     #"django_browser_reload.middleware.BrowserReloadMiddleware",
     #"django_browser_reload.middleware.BrowserReloadMiddleware",
+<<<<<<< HEAD
     "whitenoise.middleware.WhiteNoiseMiddleware",
+=======
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -167,8 +170,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+<<<<<<< HEAD
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+=======
+
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',

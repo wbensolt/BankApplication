@@ -51,6 +51,7 @@ def get_service_account_token():
         print(f"Token Retrieval Error: {str(e)}")
         return None
 
+<<<<<<< HEAD
 import os
 import datetime
 import pyodbc
@@ -107,6 +108,34 @@ def get_jwt_token():
 
     print("Informations de l'utilisateur :", usern, password, email, flush=True)
 
+=======
+
+import sqlite3
+import os
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis le fichier .env
+
+
+def get_jwt_token():
+    load_dotenv()
+    db_path = os.getenv("DB_PATH", "db.sqlite3")  # Utilise la valeur du .env ou "db.sqlite3" par défaut
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Récupérer les valeurs depuis le fichier .env
+    password = os.getenv("DEFAULT_PASSWORD")
+    usern = os.getenv("username_")
+    email = os.getenv("EMAIL")
+    is_superuser = 0  # Valeur par défaut (False en SQLite)
+    is_staff = 0  # Ajout de is_staff pour éviter d'autres erreurs
+    first_name = os.getenv("FIRST_NAME")  # Valeur par défaut pour first_name
+    last_name = os.getenv("LAST_NAME")  # Valeur par défaut pour last_name
+    date_joined = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Date d'inscription actuelle
+    role = os.getenv("ROLE", "user")  # Ajout du rôle par défaut
+    is_active = 1  # L'utilisateur est actif par défaut
+    print("userrrrrr",usern, password,email)
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
     try:
         # Vérifier si l'utilisateur existe déjà
         cursor.execute("SELECT id FROM bankapp_user WHERE username = ? AND email = ?", (usern, email))
@@ -114,7 +143,10 @@ def get_jwt_token():
 
         if user:
             user_id = user[0]
+<<<<<<< HEAD
             print("Utilisateur existant trouvé. ID :", user_id, flush=True)
+=======
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
         else:
             # Insérer l'utilisateur s'il n'existe pas
             cursor.execute(
@@ -124,6 +156,7 @@ def get_jwt_token():
                 (usern, email, password, first_name, last_name, is_superuser, is_staff, is_active, date_joined, role)
             )
             conn.commit()
+<<<<<<< HEAD
 
             # Récupérer l'ID du dernier enregistrement inséré
             cursor.execute("SELECT SCOPE_IDENTITY()")
@@ -136,20 +169,31 @@ def get_jwt_token():
                 print("Utilisateur inséré avec succès. ID :", user_id, flush=True)
 
             # Activer l'utilisateur et récupérer le token
+=======
+            user_id = cursor.lastrowid  # Récupérer l'ID du nouvel utilisateur
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
             from django.db import connection
             db = connection
             auth_service = AuthService(db)
             try:
+<<<<<<< HEAD
                 response = auth_service.activate_user_and_fetch_token(email, os.getenv("DEFAULT_PASSWORD"))
                 print("Réponse de l'activation :", response, flush=True)  # Affichez le résultat dans les logs
             except Exception as e:
                 print(f"Erreur lors de l'activation : {e}", flush=True)
+=======
+                response = auth_service.activate_user_and_fetch_token(email, password)
+                print(response)  # Affichez le résultat dans les logs
+            except Exception as e:
+                print(f"Erreur lors de l'activation : {e}")
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
 
         # Récupérer le token de l'utilisateur
         cursor.execute("SELECT token FROM bankapp_tokenmodel WHERE user_id = ?", (user_id,))
         token = cursor.fetchone()
 
         if token:
+<<<<<<< HEAD
             print(f"Token récupéré : {token[0]}", flush=True)
             return token[0]
         else:
@@ -169,4 +213,17 @@ def get_jwt_token():
         return None
     finally:
         cursor.close()
+=======
+            print(f"Token récupéré : {token[0]}")
+            return token[0]
+        else:
+            print("Aucun token trouvé pour cet utilisateur.")
+            return None
+
+    except sqlite3.Error as e:
+        print(f"Erreur SQLite : {e}")
+        return None
+
+    finally:
+>>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912
         conn.close()
