@@ -84,10 +84,6 @@ wcwidth==0.2.13
 websockets==15.0
 django-widget-tweaks==1.5.0
 
-<<<<<<< HEAD
 django-mssql-backend==2.8.1
 mssql-django
 Pillow==11.1.0
-=======
-django-mssql-backend==2.8.1
->>>>>>> d8f83e11fd7befe26bf988b9beb356f3f201c912

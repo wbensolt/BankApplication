@@ -1,81 +1,104 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-  }
-
-  required_version = ">= 1.1.0"
-}
-
 provider "azurerm" {
   features {}
 }
 
-# 🔹 Création du groupe de ressources
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group
-  location = var.location
+# Variables pour la configuration de l'API Django
+variable "db_path" {}
+variable "username_" {}
+variable "email" {}
+variable "default_password" {}
+variable "first_name" {}
+variable "last_name" {}
+variable "role" {}
+
+# Variables pour la configuration de la base de données SQL Server (existant)
+variable "serverdj_" {}
+variable "portdj_" {}
+variable "usernamedj_" {}
+variable "passworddj_" {}
+variable "driverdj_" {}
+variable "databasedj_" {}
+
+# Variables pour la configuration de l'API Django
+variable "secret_key_" {}
+variable "algorithm_" {}
+variable "debug" {}
+variable "allowed_hosts" {}
+variable "api_url" {}
+variable "access_token_expire_minutes_" {}
+
+# Variables pour Azure
+variable "azure_resource_group" {}
+variable "azure_acr_name" {}
+variable "azure_container_name" {}
+variable "azure_image_name" {}
+variable "azure_location" {}
+variable "azure_port" {}
+variable "dns_label" {}
+
+# Définir le groupe de ressources
+resource "azurerm_resource_group" "example" {
+  name     = var.azure_resource_group
+  location = var.azure_location
 }
 
-# 🔹 Création du registre ACR
-resource "azurerm_container_registry" "acr" {
-  name                = var.acr_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location           = azurerm_resource_group.rg.location
-  sku                = "Basic"
-  admin_enabled      = true
+# Définir le registre ACR
+resource "azurerm_container_registry" "example" {
+  name                     = var.azure_acr_name
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = var.azure_location
+  sku                      = "Basic"
+  admin_enabled            = true
 }
 
-# 🔹 Création du serveur SQL (remplacé par azurerm_mssql_server)
-resource "azurerm_mssql_server" "sql" {
-  name                         = "sqlserver${var.container_name}"
-  resource_group_name          = azurerm_resource_group.rg.name
-  location                     = azurerm_resource_group.rg.location
-  version                      = "12.0"
-  administrator_login          = "admin${var.container_name}"
-  administrator_login_password = "P@ssword123" # À remplacer par une variable sécurisée
-  ssl_enforcement              = "Enabled"
-}
-
-# 🔹 Création de la base de données SQL (remplacement de sku_name par edition)
-resource "azurerm_sql_database" "db" {
-  name                = "${var.container_name}-db"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  server_name         = azurerm_mssql_server.sql.name
-  edition             = "Basic" # Remplacé sku_name par edition
-}
-
-# 🔹 Déploiement du conteneur
-resource "azurerm_container_group" "aci" {
-  name                = var.container_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+# Définir le conteneur Azure
+resource "azurerm_container_group" "example" {
+  name                = var.azure_container_name
+  location            = var.azure_location
+  resource_group_name = azurerm_resource_group.example.name
   os_type             = "Linux"
+  dns_name_label = var.dns_label
+
+  # Authentification avec le registre Azure Container Registry
+  image_registry_credential {
+    server   = azurerm_container_registry.example.login_server
+    username = azurerm_container_registry.example.admin_username
+    password = azurerm_container_registry.example.admin_password
+  }
 
   container {
-    name   = var.container_name
-    image  = "${azurerm_container_registry.acr.login_server}/${var.image_name}:latest"
-    cpu    = var.cpu
-    memory = var.memory
-    
+    name   = var.azure_container_name
+    image  = "${azurerm_container_registry.example.login_server}/${var.azure_image_name}:latest"
+    cpu    = "2"
+    memory = "4"
     ports {
-      port     = var.port
+      port     = tonumber(var.azure_port)
       protocol = "TCP"
     }
 
     environment_variables = {
-      serverdj_            = azurerm_mssql_server.sql.fully_qualified_domain_name
-      portdj_              = "1433"
-      usernamedj_          = "admin${var.container_name}"
-      passworddj_          = "P@ssword123" # À remplacer par une variable sécurisée
-      driverdj_            = "ODBC Driver 18 for SQL Server"
-      databasedj_          = "${var.container_name}-db"
-      SECRET_KEY_          = "c3f55e56eae44a9191a7c6a3077e5dd372c08c57c55a8c4baf7681a84a3b4d5c"
-      ALGORITHM_           = "HS256"
-      ACCESS_TOKEN_EXPIRE_MINUTES_ = "2160"
+      server_                        = var.serverdj_
+      port_                          = var.portdj_
+      username_                      = var.usernamedj_
+      password_                      = var.passworddj_
+      driver_                        = var.driverdj_
+      database_                      = var.databasedj_
+      SECRET_KEY_                    = var.secret_key_
+      ALGORITHM_                     = var.algorithm_
+      ACCESS_TOKEN_EXPIRE_MINUTES_   = var.access_token_expire_minutes_
+      DEBUG                          = var.debug
+      ALLOWED_HOSTS                  = var.allowed_hosts
+      API_URL                        = var.api_url
     }
   }
+}
+
+# Sortie de l'IP publique du conteneur avec DNS
+output "container_ip" {
+  value = azurerm_container_group.example.ip_address
+}
+
+# Générer l'URL du FQDN avec le DNS label
+output "container_fqdn" {
+  value = "${var.dns_label}.${var.azure_location}.azurecontainer.io"
 }

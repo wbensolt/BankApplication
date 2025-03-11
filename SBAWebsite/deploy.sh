@@ -83,3 +83,7 @@ IP=$(az container show --resource-group $RESOURCE_GROUP --name $CONTAINER_NAME -
 
 echo "✅ Déploiement terminé !"
 echo "🌍 Accédez à votre API sur : http://$IP:$PORT/docs"
+
+# Accès via DNS_LABEL
+CONTAINER_FQDN="${DNS_LABEL}.${LOCATION}.azurecontainer.io"
+echo "Votre application est accessible via : http://${CONTAINER_FQDN}:${PORT}"
