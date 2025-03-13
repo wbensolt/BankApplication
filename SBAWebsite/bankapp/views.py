@@ -169,7 +169,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context['pending_reviews_count'] = LoanRequest.objects.filter(client__in=paired_clients, status='pending').count()
             
             # Approved today
-            today = datetime.now().date()
+            today = datetime.datetime.now().date()
             context['approved_today_count'] = LoanRequest.objects.filter(
                 client__in=paired_clients, 
                 status='approved',

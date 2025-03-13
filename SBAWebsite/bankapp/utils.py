@@ -90,7 +90,7 @@ def get_jwt_token():
                 """INSERT INTO bankapp_user 
                 (username, email, password, first_name, last_name, is_superuser, is_staff, is_active, date_joined, role) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (usern, email, password, first_name, last_name, is_superuser, is_staff, is_active, date_joined, role)
+                (usern, email, password, "first_name", "last_name", is_superuser, is_staff, is_active, date_joined, role)
             )
             conn.commit()
             user_id = cursor.lastrowid  # Récupérer l'ID du nouvel utilisateur

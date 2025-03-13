@@ -12,22 +12,48 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# load_dotenv()
+# print(50*"CHARGEMENT .ENV")  # Debug temporaire
+# print(os.getenv('databasedj_'))  # Debug temporaire
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+env_path = BASE_DIR / ".env"
+
+print(f"📌 Fichier .env trouvé ? {env_path.exists()}")
+load_dotenv(env_path)
+print(f"📌 databasedj: {os.getenv('databasedj')}")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-%iyebyj1+lyr-%h0ktd#&yvsh4s+2kohiqn7!q9p-t+_dsq7-f"
+# SECRET_KEY = "django-insecure-%iyebyj1+lyr-%h0ktd#&yvsh4s+2kohiqn7!q9p-t+_dsq7-f"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+# Configuration de la base de données MSSQL
+MSSQL_ENGINE = 'mssql'
+MSSQL_NAME = os.getenv('databasedj')  # Nom de la base de données
+MSSQL_USER = os.getenv('usernamedj')  # Nom d'utilisateur
+MSSQL_PASSWORD = os.getenv('passworddj')  # Mot de passe
+MSSQL_HOST = os.getenv('serverdj')  # Nom du serveur Azure SQL
+MSSQL_PORT = os.getenv('portdj')  # Port (1433 par défaut pour Azure SQL)
+# DATABASE_URL = os.getenv('DATABASE_URL')  # 
+
+
+
+# Configuration de Django
+SECRET_KEY = os.getenv('SECRET_KEY')  # Clé secrète pour Django
+DEBUG = os.getenv('DEBUG') == 'False'  # Mode debug (True ou False)
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')  # Liste des hôtes autorisés
+FASTAPI_URL = os.getenv('API_URL')  # URL de l'API FastAPI
 
 # Application definition
 
@@ -90,11 +116,28 @@ WSGI_APPLICATION = "SBAWebsite.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+#SQLite
+# # DATABASES = {
+# #     "default": {
+# #         "ENGINE": "django.db.backends.sqlite3",
+# #         "NAME": BASE_DIR / "db.sqlite3",
+# #     }
+# # }
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': MSSQL_ENGINE,
+        'NAME': MSSQL_NAME,
+        'USER': MSSQL_USER,
+        'PASSWORD': MSSQL_PASSWORD,
+        'HOST': MSSQL_HOST,
+        'PORT': MSSQL_PORT,
+        'OPTIONS': {
+            'driver': 'ODBC Driver 18 for SQL Server',  # Utiliser le driver ODBC 18 pour SQL Server
+            'Encrypt': 'yes',  # Activer le chiffrement
+            'TrustServerCertificate': 'no',  # Ne pas faire confiance au certificat du serveur
+            'Connection Timeout': 30,  # Timeout de connexion
+        },
     }
 }
 
@@ -133,7 +176,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',

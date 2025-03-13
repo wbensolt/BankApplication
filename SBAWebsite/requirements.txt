@@ -27,7 +27,7 @@ django-cors-headers==4.7.0
 django-debug-toolbar==5.0.1
 django-extensions==3.2.3
 django-htmx==1.22.0
-django-markdownx==4.0.7
+django-mssql-backend==2.8.1
 django-tailwind==3.4.0
 django-webpack-loader==3.1.1
 django-widget-tweaks==1.5.0
@@ -53,13 +53,13 @@ ipython==8.32.0
 jedi==0.19.2
 Jinja2==3.1.5
 kombu==5.4.2
-Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
 msgpack==1.1.0
+mssql-django==1.5
 mypy-extensions==1.0.0
 packaging==24.2
 parso==0.8.4
@@ -79,12 +79,14 @@ pydantic_core==2.27.2
 pyflakes==3.2.0
 Pygments==2.19.1
 PyJWT==2.10.1
+pyodbc==5.2.0
 pytailwindcss==0.2.0
 pytest==8.3.4
 pytest-django==4.10.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-slugify==8.0.4
+pytz==2025.1
 PyYAML==6.0.2
 rcssmin==1.1.2
 redis==5.2.1
@@ -103,7 +105,7 @@ typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
 uvicorn==0.34.0
-#uvloop==0.21.0
+uvloop==0.21.0
 vine==5.1.0
 watchfiles==1.0.4
 wcwidth==0.2.13
