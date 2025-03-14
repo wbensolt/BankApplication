@@ -748,7 +748,9 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
         }
 
         # ✅ Send request to FastAPI
-        fastapi_url = "http://localhost:8001/loans/predict"  # Adjust if needed
+        fastapi_url2 = os.getenv('API_URL')
+        print(fastapi_url2)
+        fastapi_url = "http://20.19.244.231:8001/loans/predict"  # Adjust if needed
         try:
             response = requests.post(fastapi_url, json=payload, headers=headers)
             response.raise_for_status()
