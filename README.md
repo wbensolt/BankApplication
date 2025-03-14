@@ -76,7 +76,7 @@ Below are some UI previews of SecureBank:
 - Home page (Not logged in)
 ![home page not logged in](<Capture d’écran du 2025-03-14 10-19-27.png>)
 
--Home Page (Logged in - Role Based View)
+- Home Page (Logged in - Role Based View)
 ![advisor exemple](<Capture d’écran du 2025-03-14 10-18-48.png>)
 
 - Secure Login & Registration Pages
