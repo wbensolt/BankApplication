@@ -73,25 +73,25 @@ To deploy the application on **Azure Container Instances (ACI)**:
 ## 📷 Screenshots
 Below are some UI previews of SecureBank:
 
-- Home page when not logged-in
+- Home page (Not logged in)
 ![home page not logged in](<Capture d’écran du 2025-03-14 10-19-27.png>)
 
-- Home Page when Logged in (visual changes depending on role)
+-Home Page (Logged in - Role Based View)
 ![advisor exemple](<Capture d’écran du 2025-03-14 10-18-48.png>)
 
-- Secured login and register page 
+- Secure Login & Registration Pages
 ![alt text](<Capture d’écran du 2025-03-14 10-19-13.png>)
 ![alt text](<Capture d’écran du 2025-03-14 10-19-19.png>)
-- Dashboard (Depends on role, in this example we'll use an advisor)
+- Dashboard (Role-Based, Example: Advisor)
 ![alt text](<Capture d’écran du 2025-03-14 10-18-31.png>)
-- Loan application approve or reject incoming loan requests
+- Loan Applications (Approve or Reject Requests)
 ![alt text](<Capture d’écran du 2025-03-14 10-18-18.png>)
 ![alt text](<Capture d’écran du 2025-03-14 11-29-48.png>)
-- Messages View (Choose a client from the conversations bar, search bar activated if more than 5 clients, find quick response to help you answer your clients request as a service representative in the quick response bar)
+- Messages View (Client Conversations, Quick Responses for Advisors)
 ![alt text](<Capture d’écran du 2025-03-14 10-18-06.png>)
-- News management (Create, Edit and Delete client news)
+-News Management (Create, Edit, Delete for advisors, See News for Clients)
 ![alt text](<Capture d’écran du 2025-03-14 10-17-30.png>)
-- In the client side they can send and see messages but not quick response, and they can see the news the bank posted. For the loan prediction once they fill out a form this is their view 
+- Client-Side View (Loan Prediction)
 ![alt text](<Capture d’écran du 2025-03-14 11-23-43.png>) 
 ![alt text](<Capture d’écran du 2025-03-14 11-23-56.png>)
 ## 📡 API Endpoints
