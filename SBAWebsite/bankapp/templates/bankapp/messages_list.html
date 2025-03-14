@@ -64,6 +64,11 @@
                     class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
                     <i data-lucide="message-square" class="h-5 w-5"></i>
                     <span class="mx-4">Messages</span>
+                    {% if unread_messages_count > 0 %}
+                    <span class="ml-auto bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                        {{ unread_messages_count }}
+                    </span>
+                    {% endif %}
                 </a>
                 <a href="{% url 'client_news_list' %}"
                     class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
@@ -81,11 +86,21 @@
                     class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                     <i data-lucide="file-text" class="h-5 w-5"></i>
                     <span class="mx-4">Loan Applications</span>
+                    {% if pending_reviews_count > 0 %}
+                    <span class="ml-auto bg-yellow-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                        {{ pending_reviews_count }}
+                    </span>
+                    {% endif %}
                 </a>
                 <a href="{% url 'advisor_messages_list' %}" 
                     class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
                     <i data-lucide="message-square" class="h-5 w-5"></i>
                     <span class="mx-4">Messages</span>
+                    {% if unread_messages_count > 0 %}
+                    <span class="ml-auto bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                        {{ unread_messages_count }}
+                    </span>
+                    {% endif %}
                 </a>
                 <a href="{% url 'advisor_news_list' %}"
                     class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">

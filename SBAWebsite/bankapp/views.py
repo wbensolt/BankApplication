@@ -121,6 +121,8 @@ class HomeView(TemplateView):
 ##### Profile Views 
 
 # Dashboard View with Role-Based Template
+import datetime  # Make sure you import datetime
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     """
     Role-Based Dashboard View
@@ -133,54 +135,53 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         elif self.request.user.role == 'client':
             return ['bankapp/client_dashboard.html']
         else:
-            # Default to client dashboard if role is undefined
             return ['bankapp/client_dashboard.html']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        
-        # Common data for both roles
-        # News Articles
-        context['latest_news'] = NewsArticle.objects.all().order_by('-published_date')[:5]  # Get latest 5 news articles
-        
+
+        # Latest 5 news articles (common for both roles)
+        context['latest_news'] = NewsArticle.objects.order_by('-published_date')[:5]
+
         if user.role == 'client':
-            # Client-specific dashboard data
-            # Count messages from the assigned advisor
-            conversations = Conversation.objects.filter(client=user)
-            context['unread_messages_count'] = Message.objects.filter(conversation__in=conversations).exclude(sender=user).count()
-            
-            # Loan statistics
+            # Conversations and unread messages specific to client
+            context['unread_messages_count'] = Message.objects.filter(
+                receiver=user, read=False
+            ).count()
+
             context['total_applications'] = LoanRequest.objects.filter(client=user).count()
             context['approved_loans'] = LoanRequest.objects.filter(client=user, status='approved').count()
             context['pending_requests'] = LoanRequest.objects.filter(client=user, status='pending').count()
-            
+
         elif user.role == 'advisor':
-            # Advisor-specific dashboard data
-            # Get all clients paired with this advisor
+            # All clients assigned to this advisor
             paired_clients = AdvisorClientPairing.objects.filter(advisor=user).values_list('client', flat=True)
+
+            # Correct unread message count (messages sent TO the advisor)
+            context['unread_messages_count'] = Message.objects.filter(
+                receiver=user, read=False
+            ).count()
+
             context['active_clients_count'] = len(paired_clients)
-            
-            # Count unread messages from clients
-            conversations = Conversation.objects.filter(advisor=user)
-            context['unread_messages_count'] = Message.objects.filter(conversation__in=conversations).exclude(sender=user).count()
-            
-            # Loan statistics
-            context['pending_reviews_count'] = LoanRequest.objects.filter(client__in=paired_clients, status='pending').count()
-            
-            # Approved today
-            today = datetime.now().date()
+
+            context['pending_reviews_count'] = LoanRequest.objects.filter(
+                client__in=paired_clients,
+                status='pending'
+            ).count()
+
+            # Approved today count
+            today = datetime.datetime.now().date()
             context['approved_today_count'] = LoanRequest.objects.filter(
-                client__in=paired_clients, 
+                client__in=paired_clients,
                 status='approved',
                 updated_at__date=today
             ).count()
-            
-            # Recent loan applications
+
             context['recent_applications'] = LoanRequest.objects.filter(
                 client__in=paired_clients
             ).order_by('-created_at')[:10]
-        
+
         return context
 
 
@@ -283,26 +284,48 @@ class MessageListView(ListView):
         
         return context
     
-# Message Detail View
-class MessageDetailView(DetailView):
+# # Message Detail View
+# class MessageDetailView(DetailView):
+#     model = Conversation
+#     template_name = "bankapp/messages_list.html"
+#     context_object_name = "active_conversation"
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['user_role'] = self.request.user.role
+        
+#         # Fetch conversations for the sidebar
+#         user = self.request.user
+#         if user.role == 'client':
+#             context['conversations'] = Conversation.objects.filter(client=user)
+#         elif user.role == 'advisor':
+#             context['conversations'] = Conversation.objects.filter(advisor=user)
+#         else:
+#             context['conversations'] = Conversation.objects.none()
+        
+#         return context
+class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Conversation
     template_name = "bankapp/messages_list.html"
     context_object_name = "active_conversation"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_role'] = self.request.user.role
-        
-        # Fetch conversations for the sidebar
         user = self.request.user
+
+        context['user_role'] = user.role
+
+        # Conversations sidebar
         if user.role == 'client':
             context['conversations'] = Conversation.objects.filter(client=user)
         elif user.role == 'advisor':
             context['conversations'] = Conversation.objects.filter(advisor=user)
         else:
             context['conversations'] = Conversation.objects.none()
-        
+
         return context
+
+
     
 # Message Create View
 class MessageCreateView(CreateView):
@@ -314,6 +337,13 @@ class MessageCreateView(CreateView):
         conversation = get_object_or_404(Conversation, pk=self.kwargs['pk'])
         form.instance.conversation = conversation
         form.instance.sender = self.request.user
+
+          # ✅ Assign the correct receiver based on the sender
+        if self.request.user == conversation.client:
+            form.instance.receiver = conversation.advisor  # Client sends to advisor
+        else:
+            form.instance.receiver = conversation.client  # Advisor sends to client
+
 
         # Handle attachment
         if self.request.FILES:
@@ -367,10 +397,20 @@ from .models import User, TokenModel
 import requests
 from django.conf import settings
 
+import threading
+import datetime
+from datetime import timedelta
+from fastapi import HTTPException
+from django.utils import timezone
+from .models import User, TokenModel
+import requests
+from django.conf import settings
+from django.db import transaction
+
 class AuthService:
     def __init__(self, db):
-        self.db = db  # Cela doit être une instance de la session Django ORM
-        self.token_check_interval = 86400#1800  # 30 minutes
+        self.db = db  # Django ORM connection
+        self.token_check_interval = 86400  # 1 day
         self.token_thread = None
 
     def start_token_refresh_timer(self, user: User):
@@ -388,48 +428,55 @@ class AuthService:
                 print(f"Erreur lors du rafraîchissement du token: {e.detail}")
 
     def activate_user_and_fetch_token(self, email: str, password: str):
-        # Récupérer les valeurs depuis le fichier .env
+        """
+        ✅ Corrected: Now fully uses Django ORM and Azure SQL instead of SQLite.
+        ✅ Ensures user creation/update happens inside a transaction.
+        """
         load_dotenv()
 
-        db_path = os.getenv("DB_PATH")
-        password = os.getenv("DEFAULT_PASSWORD")
-        username = os.getenv("USERNAME")
+        # Fetch user details from .env
+        username = os.getenv("USERNAME_")  # ✅ Use correct .env variable
         email = os.getenv("EMAIL")
-        is_superuser = 0  # Valeur par défaut (False en SQLite)
-        is_staff = 0  # Ajout de is_staff pour éviter d'autres erreurs
+        password = os.getenv("DEFAULT_PASSWORD")
+        is_superuser = False  # Default role unless changed
+        is_staff = False
         first_name = os.getenv("FIRST_NAME")
         last_name = os.getenv("LAST_NAME")
-        date_joined = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Date d'inscription actuelle
-        role = os.getenv("ROLE", "user")  # Valeur par défaut pour le rôle
-        is_active = 1  # L'utilisateur est actif par défaut
+        date_joined = timezone.now()
+        role = os.getenv("ROLE", "user")
+        is_active = True  # Ensure user is active
 
+        # ✅ Use Django ORM instead of direct database query
         try:
-            # Vérifier si l'utilisateur existe
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            # Si l'utilisateur n'existe pas, créer un utilisateur avec les informations du fichier .env
-            user = User.objects.create(
-            email=email,
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            password=password,  # Hachage du mot de passe
-            is_superuser=is_superuser,
-            is_staff=is_staff,
-            date_joined=date_joined,
-            is_active=is_active,
-            role=role,
-            )
-            user.save()  # Enregistrer le nouvel utilisateur
-            print(f"Nouvel utilisateur créé : {user.username}")
-            
-        # Une fois l'utilisateur trouvé ou créé, récupérer le token
-        access_token, expires_at = self._request_new_token(user.email, password)
-        
-        # Convertir expires_at en datetime pour le modèle Django
-        expires_at_datetime = timezone.now() + timedelta(seconds=expires_at)
+            with transaction.atomic():  # Ensure atomicity
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={
+                        "username": username,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "password": password,
+                        "is_superuser": is_superuser,
+                        "is_staff": is_staff,
+                        "date_joined": date_joined,
+                        "is_active": is_active,
+                        "role": role,
+                    }
+                )
+                if created:
+                    print(f"✅ New user created: {user.username}")
+                else:
+                    print(f"🔍 User already exists: {user.username}")
 
-        # Mettre à jour ou créer le token dans la base de données
+        except Exception as e:
+            print(f"❌ Database Error: {e}")
+            return {"error": "Database error while creating user"}
+
+        # ✅ Request a new FastAPI token
+        access_token, expires_at = self._request_new_token(user.email, password)
+
+        # ✅ Store token in the database
+        expires_at_datetime = timezone.now() + timedelta(seconds=expires_at)
         TokenModel.objects.update_or_create(
             user=user,
             defaults={"token": access_token, "expires_at": expires_at_datetime}
@@ -437,28 +484,30 @@ class AuthService:
 
         self.start_token_refresh_timer(user)
         return {"message": "Activation réussie. Vous pouvez maintenant vous connecter.", "access_token": access_token}
-        
+
     def _request_new_token(self, email: str, password: str):
         fastapi_url = settings.FASTAPI_URL + "/auth/login"
         response = requests.post(fastapi_url, data={"email": email, "password": password})
-       
+
         if response.status_code != 200:
+            print(f"❌ FastAPI Authentication Failed: {response.status_code} - {response.text}")
             raise HTTPException(status_code=500, detail="Échec de la récupération du token FastAPI")
-        
+
         token_data = response.json()
-        return token_data.get("access_token"), 86400  # 30 minutes de validité
+        return token_data.get("access_token"), 86400  # Token valid for 1 day
 
     def get_valid_token(self, user: User):
         token_obj = TokenModel.objects.filter(user=user).first()
-        
+
         if not token_obj or token_obj.expires_at < timezone.now():
-            access_token, _ = self._request_new_token(user.email, user.password)  # Utiliser le mot de passe de l'utilisateur
+            access_token, _ = self._request_new_token(user.email, user.password)
             token_obj, created = TokenModel.objects.update_or_create(
                 user=user,
-                defaults={"token": access_token, "expires_at": timezone.now() + timedelta(seconds=86400)}  # Mettre à jour l'expiration
+                defaults={"token": access_token, "expires_at": timezone.now() + timedelta(seconds=86400)}
             )
-        
+
         return token_obj.token
+
 
 ###### News 
 
@@ -748,7 +797,8 @@ class ClientLoanRequestPredictView(LoginRequiredMixin, View):
         }
 
         # ✅ Send request to FastAPI
-        fastapi_url = "http://localhost:8001/loans/predict"  # Adjust if needed
+        #fastapi_url = "http://98.66.186.95:8000/loans/predict"  # Adjust if needed
+        fastapi_url = settings.FASTAPI_URL + "/loans/predict"
         try:
             response = requests.post(fastapi_url, json=payload, headers=headers)
             response.raise_for_status()
@@ -798,18 +848,6 @@ class ClientLoanRequestListView(LoginRequiredMixin, View):
 
 
 ### ADVISOR VIEWS ###
-
-# class AdvisorLoanRequestListView(LoginRequiredMixin, View):
-#     template_name = 'bankapp/advisor_loan_list.html'
-
-#     def get(self, request):
-#         # Get clients paired with this advisor
-#         paired_clients = AdvisorClientPairing.objects.filter(advisor=request.user).values_list('client', flat=True)
-
-#         # Display only pending loan requests from paired clients
-#         loan_requests = LoanRequest.objects.filter(client__in=paired_clients, status='pending')
-        
-#         return render(request, self.template_name, {'loan_requests': loan_requests})
 
 
 

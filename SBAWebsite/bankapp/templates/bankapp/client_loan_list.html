@@ -5,41 +5,46 @@
 
 {% block content %}
 <div class="min-h-[calc(100vh-4rem)] bg-gray-100" x-data="{ sidebarOpen: false }">
-      <!-- Sidebar -->
-      <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-20"
-      :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:translate-x-0': true}">
-      <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
-          <div class="flex items-center">
-              <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
-              <span class="ml-2 text-xl font-semibold text-white">Client Portal</span>
-          </div>
-          <button @click="sidebarOpen = false" class="lg:hidden">
-              <i data-lucide="x" class="h-6 w-6 text-white"></i>
-          </button>
-      </div>
-      <nav class="mt-4">
-          <a href="{% url 'client_dashboard' %}"
-              class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
-              <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
-              <span class="mx-4">Dashboard</span>
-          </a>
-          <a href="{% url 'client_loan_list' %}"
-              class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
-              <i data-lucide="file-text" class="h-5 w-5"></i>
-              <span class="mx-4">My Loans</span>
-          </a>
-          <a href="{% url 'client_messages_list' %}" 
-              class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
-              <i data-lucide="message-square" class="h-5 w-5"></i>
-              <span class="mx-4">Messages</span>
-          </a>
-          <a href="{% url 'client_news_list' %}"
-              class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
-              <i data-lucide="newspaper" class="h-5 w-5"></i>
-              <span class="mx-4">Bank News</span>
-          </a>
-      </nav>
-  </div>
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out z-20"
+        :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen, 'lg:translate-x-0': true}">
+        <div class="h-16 flex items-center justify-between px-4 bg-blue-600">
+            <div class="flex items-center">
+                <i data-lucide="building-2" class="h-8 w-8 text-white"></i>
+                <span class="ml-2 text-xl font-semibold text-white">Client Portal</span>
+            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden">
+                <i data-lucide="x" class="h-6 w-6 text-white"></i>
+            </button>
+        </div>
+        <nav class="mt-4">
+            <a href="{% url 'client_dashboard' %}"
+                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
+                <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                <span class="mx-4">Dashboard</span>
+            </a>
+            <a href="{% url 'client_loan_list' %}"
+                class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <i data-lucide="file-text" class="h-5 w-5"></i>
+                <span class="mx-4">My Loans</span>
+            </a>
+            <a href="{% url 'client_messages_list' %}" 
+                class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <i data-lucide="message-square" class="h-5 w-5"></i>
+                <span class="mx-4">Messages</span>
+                {% if unread_messages_count > 0 %}
+                <span class="ml-auto bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                    {{ unread_messages_count }}
+                </span>
+                {% endif %}
+            </a>
+            <a href="{% url 'client_news_list' %}"
+                class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <i data-lucide="newspaper" class="h-5 w-5"></i>
+                <span class="mx-4">Bank News</span>
+            </a>
+        </nav>
+    </div>
 
   <!-- Main Content -->
   <div class="lg:pl-64">

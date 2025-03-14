@@ -37,6 +37,11 @@
                             <i data-lucide="layout-dashboard" class="h-4 w-4 mr-1"></i>
                             Client Dashboard
                         </a>
+                    {% elif user.role == 'admin' %}
+                        <a href="{% url 'dashboard' %}?role=admin" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                            <i data-lucide="layout-dashboard" class="h-4 w-4 mr-1"></i>
+                            Admin Dashboard
+                        </a>
                     {% endif %}
                     <a href="{% url 'logout' %}" class="flex items-center bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium">
                         <i data-lucide="log-out" class="h-4 w-4 mr-1"></i>

@@ -18,12 +18,12 @@
         </div>
         <nav class="mt-4">
             <a href="{% url 'client_dashboard' %}"
-                class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                class="flex items-center px-4 py-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
                 <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
                 <span class="mx-4">Dashboard</span>
             </a>
             <a href="{% url 'client_loan_list' %}"
-                class="flex items-center px-4 py-2 mt-2 text-gray-700 bg-gray-100 border-r-4 border-blue-600">
+                class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="file-text" class="h-5 w-5"></i>
                 <span class="mx-4">My Loans</span>
             </a>
@@ -31,6 +31,11 @@
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
                 <i data-lucide="message-square" class="h-5 w-5"></i>
                 <span class="mx-4">Messages</span>
+                {% if unread_messages_count > 0 %}
+                <span class="ml-auto bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-0.5">
+                    {{ unread_messages_count }}
+                </span>
+                {% endif %}
             </a>
             <a href="{% url 'client_news_list' %}"
                 class="flex items-center px-4 py-2 mt-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
@@ -52,12 +57,7 @@
                     <span class="text-sm text-gray-600">Welcome back,</span>
                     <span class="ml-1 text-sm font-semibold text-gray-900">{{ request.user.username }}</span>
                 </div>
-                <div>
-                    <a href="{% url 'logout' %}" class="text-sm text-gray-600 hover:text-gray-900">
-                        <i data-lucide="log-out" class="h-5 w-5 inline-block align-text-bottom"></i>
-                        Logout
-                    </a>
-                </div>
+
             </div>
         </div>
 
