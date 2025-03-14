@@ -1,9 +1,27 @@
+"""
+Django models for a banking application.
+
+This module defines the data models for:
+- User authentication and roles (Client, Advisor, Admin)
+- Advisor-Client relationships
+- Messaging system with conversations and canned responses
+- News articles
+- API token management
+- Loan request processing
+"""
+
+# Django imports
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils import timezone
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Count
+from django.utils import timezone
 
-###### User Model and assigned roles 
+# Python standard library
+from random import choice
+from typing import Optional
 
+# User Management Models
 class UserManager(BaseUserManager):
     """
     Custom User Manager to handle user creation and superuser creation.
@@ -11,7 +29,7 @@ class UserManager(BaseUserManager):
         - 'advisor' for superusers
         - 'client' for all other users
     """
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email: str, password: Optional[str] = None, **extra_fields) -> 'User':
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
@@ -21,14 +39,18 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, email: str, password: Optional[str] = None, **extra_fields) -> 'User':
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('role', 'advisor')  # Superusers are advisors
         return self.create_user(email, password, **extra_fields)
 
-
 class User(AbstractUser):
+    """
+    Custom user model extending Django's AbstractUser.
+    
+    Adds role-based authentication and email as the primary identifier.
+    """
     ROLE_CHOICES = (
         ('client', 'Client'),
         ('advisor', 'Conseiller Bancaire'),
@@ -52,13 +74,8 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.email} ({self.role})"
-    
 
-#Pairing advisors to clients 
-from django.contrib.auth import get_user_model
-from django.db.models import Count
-from random import choice
-
+# Get User model for foreign key relationships
 User = get_user_model()
 
 class AdvisorClientPairing(models.Model):
@@ -74,7 +91,7 @@ class AdvisorClientPairing(models.Model):
         return f"{self.client.email} paired with {self.advisor.email}"
 
     @classmethod
-    def assign_advisor(cls, client):
+    def assign_advisor(cls, client: User) -> Optional[User]:
         """
         Assigns an advisor to the client using round-robin strategy.
         - Only assigns advisors to clients (not other advisors).
@@ -83,7 +100,7 @@ class AdvisorClientPairing(models.Model):
         return advisors.first() if advisors.exists() else None
 
     @classmethod
-    def auto_assign(cls, client):
+    def auto_assign(cls, client: User) -> None:
         """
         Automatically assigns an advisor to the client upon registration.
         """
@@ -92,12 +109,7 @@ class AdvisorClientPairing(models.Model):
             if assigned_advisor:
                 cls.objects.create(client=client, advisor=assigned_advisor)
 
-
-
-###### Messages 
-
-User = get_user_model()
-
+# Messaging System Models
 class Conversation(models.Model):
     """
     Conversation Model
@@ -119,43 +131,38 @@ class Message(models.Model):
     """
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)  # NEW FIELD
+    receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
     content = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(default=timezone.now)
     attachment = models.FileField(upload_to='attachments/', blank=True, null=True)
-    read = models.BooleanField(default=False)  # Add this field
+    read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Message from {self.sender} at {self.timestamp}"
 
-    
-
-
-
-#- Canned messages for the chat (advisor)
-
-#Canned messages categories 
+# Canned Messages Models
 class CannedMessageCategory(models.Model):
+    """Category classification for canned messages."""
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
-    
-# Canned messages model 
+
 class CannedMessage(models.Model):
+    """Pre-defined messages for common responses."""
     category = models.ForeignKey(CannedMessageCategory, on_delete=models.CASCADE, related_name='canned_messages')
-    title = models.CharField(max_length=100)  #"Defining the title of the  General Answers"
-    content = models.TextField()  # The predifined answers
+    title = models.CharField(max_length=100)
+    content = models.TextField()
 
     def __str__(self):
         return f"{self.title} ({self.category.name})"
 
-    
-
-###### News 
-
-#News model 
+# News System Models
 class NewsArticle(models.Model):
+    """
+    News article model for publishing updates and announcements.
+    Includes support for images and excerpts.
+    """
     title = models.CharField(max_length=200)
     content = models.TextField()
     image = models.ImageField(upload_to='news_images/', blank=True, null=True)
@@ -167,19 +174,22 @@ class NewsArticle(models.Model):
 
     @property
     def excerpt(self):
+        """Returns a truncated version of the content for previews."""
         return self.content[:100] + '...' if len(self.content) > 100 else self.content
 
-###### API TOKEN 
-
+# Authentication Models
 class TokenModel(models.Model):
+    """API token model for authentication."""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.TextField()
     expires_at = models.DateTimeField()
 
-
-
-#### Predictions####
+# Loan Processing Models
 class LoanRequest(models.Model):
+    """
+    Loan request model for processing and tracking loan applications.
+    Includes status tracking and prediction results.
+    """
     STATUS_CHOICES = (
         ('draft', 'Draft'),  # Saved but not submitted for final review
         ('pending', 'Pending'),  # Submitted but awaiting advisor review

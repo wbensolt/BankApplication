@@ -1,13 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, NewsArticle, CannedMessageCategory, CannedMessage
+from .models import (
+    User, NewsArticle, CannedMessageCategory, CannedMessage, AdvisorClientPairing
+)
 
-from .models import AdvisorClientPairing
-
-#Assigning advisors in admin.py for old clients
 class AdvisorClientPairingAdmin(admin.ModelAdmin):
     """
-    Advisor-Client Pairing Admin
+    Admin interface for Advisor-Client Pairing.
     - Allows manual assignment of advisors to existing clients.
     - Keeps the admin interface clean and maintainable.
     """
@@ -17,10 +16,9 @@ class AdvisorClientPairingAdmin(admin.ModelAdmin):
 
 admin.site.register(AdvisorClientPairing, AdvisorClientPairingAdmin)
 
-#Updating user roles in admin.py
 class CustomUserAdmin(UserAdmin):
     """
-    Custom User Admin
+    Custom User Admin:
     - Allows role editing for all users, including superusers.
     - Ensures changes are saved correctly without affecting other users.
     """
@@ -30,56 +28,48 @@ class CustomUserAdmin(UserAdmin):
     ordering = ['email']
     search_fields = ['email', 'username']
 
-    # Display the role field in the admin panel
     fieldsets = UserAdmin.fieldsets + (
-        ('Role', {
-            'fields': ('role',)
-        }),
+        ('Role', {'fields': ('role',)}),
     )
 
-    # Allow role editing in the add user form as well
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Role', {
-            'fields': ('role',),
-        }),
+        ('Role', {'fields': ('role',)}),
     )
 
-    # Override save_model to allow role modification for superusers
     def save_model(self, request, obj, form, change):
-        # Allow role editing for all users, including superusers
-        if change and obj.is_superuser:
-            # Ensure role is set to advisor if it's empty
-            if not obj.role:
-                obj.role = 'advisor'
+        """
+        Allows role modification for all users, including superusers.
+        Ensures the role is set to 'advisor' if left empty for superusers.
+        """
+        if change and obj.is_superuser and not obj.role:
+            obj.role = 'advisor'
         
-        # Save the user with the modified role
         super().save_model(request, obj, form, change)
 
-# Register the Custom User Admin
 admin.site.register(User, CustomUserAdmin)
 
-
-
-
-##### News
-
-# Adding a new article
 class NewsArticleAdmin(admin.ModelAdmin):
+    """
+    Admin interface for managing News Articles.
+    """
     list_display = ('title', 'created_at')
     search_fields = ('title',)
 
-# Register the News Model
-admin.site.register(NewsArticle)
+admin.site.register(NewsArticle, NewsArticleAdmin)
 
-
-#### Canned Messages management 
 class CannedMessageCategoryAdmin(admin.ModelAdmin):
+    """
+    Admin interface for managing Canned Message Categories.
+    """
     list_display = ('name',)
     search_fields = ('name',)
 
 class CannedMessageAdmin(admin.ModelAdmin):
-    list_display = ('title',  'category')
-    list_filter = ('category','title')
+    """
+    Admin interface for managing Canned Messages.
+    """
+    list_display = ('title', 'category')
+    list_filter = ('category', 'title')
     search_fields = ('title', 'content')
 
 admin.site.register(CannedMessageCategory, CannedMessageCategoryAdmin)

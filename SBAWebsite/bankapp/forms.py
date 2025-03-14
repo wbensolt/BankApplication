@@ -1,94 +1,25 @@
+"""
+Forms module for handling user authentication, messaging, and loan requests.
+
+This module contains form classes for:
+- User registration and authentication
+- Messaging system
+- Loan request processing with validation
+"""
+
+# Standard library imports
+from typing import Any, Dict
+
+# Django imports
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, Message
 from django.contrib.auth import authenticate
-
-#Connexion and authentification
-class RegisterForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2', 'role']
-
-    def __init__(self, *args, **kwargs):
-        super(RegisterForm, self).__init__(*args, **kwargs)
-        self.fields['role'].initial = 'client'  # Default role as client
-        self.fields['role'].widget = forms.HiddenInput()  # Hide role field
-        
-        # Consistent styling with Tailwind CSS
-        for fieldname in ['username', 'email', 'password1', 'password2']:
-            self.fields[fieldname].widget.attrs.update({
-                'class': 'appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm'
-            })
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        # Check for email uniqueness
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("This email is already registered. Please use a different email.")
-        return email
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        
-        # Automatically assign role
-        if user.is_superuser:
-            user.role = 'advisor'
-        else:
-            user.role = 'client'
-        
-        if commit:
-            user.save()
-        return user
-
-# Login Form Using Email
-class CustomLoginForm(AuthenticationForm):
-    # Change the username field to email
-    username = forms.EmailField(
-        label="Email",
-        widget=forms.EmailInput(attrs={
-            'class': 'appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm',
-            'placeholder': 'Email'
-        })
-    )
-
-    def clean(self):
-        email = self.cleaned_data.get('username')  # Get email from username field
-        password = self.cleaned_data.get('password')
-
-        # Use email for authentication
-        if email and password:
-            self.user_cache = authenticate(self.request, email=email, password=password)
-            if self.user_cache is None:
-                raise forms.ValidationError("Invalid email or password.")
-            else:
-                self.confirm_login_allowed(self.user_cache)
-
-        return self.cleaned_data
-    
-
-    ##############Messages#####
-
-
-
-class MessageForm(forms.ModelForm):
-    class Meta:
-        model = Message
-        fields = ['content','attachment']
-        widgets = {
-            'content': forms.TextInput(attrs={
-                'class': 'appearance-none rounded-full border border-gray-300 px-4 py-2 w-full focus:outline-none focus:border-blue-500',
-                'placeholder': 'Type a message...'
-            }),
-        }
-
-################# Predictions 
-# forms.py
-
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.validators import RegexValidator
-from .models import LoanRequest
 
-# List of U.S. State Abbreviations
+# Local imports
+from .models import User, Message, LoanRequest
+
+# Constants
 STATE_CHOICES = [
     ('AL', 'Alabama'), ('AK', 'Alaska'), ('AZ', 'Arizona'), ('AR', 'Arkansas'),
     ('CA', 'California'), ('CO', 'Colorado'), ('CT', 'Connecticut'), ('DE', 'Delaware'),
@@ -105,7 +36,6 @@ STATE_CHOICES = [
     ('WI', 'Wisconsin'), ('WY', 'Wyoming')
 ]
 
-# NAICS Code Choices with Code Numbers in Labels
 NAICS_CODE_CHOICES = [
     ('11', '11 - Agriculture, forestry, fishing and hunting'),
     ('21', '21 - Mining, quarrying, and oil and gas extraction'),
@@ -133,7 +63,6 @@ NAICS_CODE_CHOICES = [
     ('92', '92 - Public administration'),
 ]
 
-# Binary Choices for Yes/No Fields
 BINARY_CHOICES = [
     (1, '1 - Yes'),
     (0, '0 - No'),
@@ -150,22 +79,116 @@ URBAN_RURAL_CHOICES = [
     (0, 'undefined'),
 ]
 
-MONTH_CHOICES=[
-    (1, 'January'),
-    (2, 'February'),
-    (3, 'March'),
-    (4, 'April'),
-    (5, 'May'),
-    (6, 'June'),
-    (7, 'July'),
-    (8, 'August'),
-    (9, 'September'),
-    (10, 'October'),
-    (11, 'November'),
-    (12, 'December'),
+MONTH_CHOICES = [
+    (1, 'January'), (2, 'February'), (3, 'March'),
+    (4, 'April'), (5, 'May'), (6, 'June'),
+    (7, 'July'), (8, 'August'), (9, 'September'),
+    (10, 'October'), (11, 'November'), (12, 'December'),
 ]
 
+class RegisterForm(UserCreationForm):
+    """
+    Custom registration form extending Django's UserCreationForm.
+    
+    Handles user registration with automatic role assignment and email validation.
+    Includes custom styling for form fields using Tailwind CSS.
+    """
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2', 'role']
+
+    def __init__(self, *args, **kwargs):
+        super(RegisterForm, self).__init__(*args, **kwargs)
+        self.fields['role'].initial = 'client'  # Default role as client
+        self.fields['role'].widget = forms.HiddenInput()  # Hide role field
+        
+        # Consistent styling with Tailwind CSS
+        for fieldname in ['username', 'email', 'password1', 'password2']:
+            self.fields[fieldname].widget.attrs.update({
+                'class': 'appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm'
+            })
+
+    def clean_email(self):
+        """Validate email uniqueness."""
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered. Please use a different email.")
+        return email
+
+    def save(self, commit=True):
+        """Save user with automatic role assignment."""
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        
+        # Automatically assign role
+        if user.is_superuser:
+            user.role = 'advisor'
+        else:
+            user.role = 'client'
+        
+        if commit:
+            user.save()
+        return user
+
+class CustomLoginForm(AuthenticationForm):
+    """
+    Custom login form using email instead of username.
+    
+    Extends Django's AuthenticationForm to use email for authentication
+    with custom styling using Tailwind CSS.
+    """
+
+    username = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={
+            'class': 'appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm',
+            'placeholder': 'Email'
+        })
+    )
+
+    def clean(self):
+        """Authenticate user using email instead of username."""
+        email = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if email and password:
+            self.user_cache = authenticate(self.request, email=email, password=password)
+            if self.user_cache is None:
+                raise forms.ValidationError("Invalid email or password.")
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
+
+class MessageForm(forms.ModelForm):
+    """
+    Form for handling message creation with attachments.
+    
+    Includes custom styling using Tailwind CSS for the message input field.
+    """
+
+    class Meta:
+        model = Message
+        fields = ['content', 'attachment']
+        widgets = {
+            'content': forms.TextInput(attrs={
+                'class': 'appearance-none rounded-full border border-gray-300 px-4 py-2 w-full focus:outline-none focus:border-blue-500',
+                'placeholder': 'Type a message...'
+            }),
+        }
+
 class LoanRequestForm(forms.ModelForm):
+    """
+    Form for handling loan requests with comprehensive validation.
+    
+    Includes fields for:
+    - Location information (state, ZIP code)
+    - Business details (NAICS code, employee count)
+    - Loan specifics (term, amount, type)
+    - Additional classifications (urban/rural, franchise status)
+    """
+
     state = forms.ChoiceField(
         choices=STATE_CHOICES,
         widget=forms.Select(attrs={'class': 'form-input'}),
@@ -192,7 +215,6 @@ class LoanRequestForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-input'}),
         help_text="Urban or Rural?"
     )
-    # Update Binary Fields
     franchise_code = forms.ChoiceField(
         choices=BINARY_CHOICES,
         widget=forms.Select(attrs={'class': 'form-input'}),
@@ -233,38 +255,43 @@ class LoanRequestForm(forms.ModelForm):
             for field in fields if field not in ['state', 'bank_state', 'zip_code']
         }
 
-    def clean_approval_fy(self):  # sourcery skip: class-extract-method
+    def clean_approval_fy(self):
+        """Validate approval fiscal year."""
         approval_fy = self.cleaned_data.get('approval_fy')
         if approval_fy < 1962:
             raise forms.ValidationError("Approval Fiscal Year must be 1962 or later.")
         return approval_fy
 
     def clean_term(self):
+        """Validate loan term."""
         term = self.cleaned_data.get('term')
         if term <= 0:
             raise forms.ValidationError("Loan Term must be longer than 0 months")
         return term
     
-    
     def clean_create_job(self):
+        """Validate job creation count."""
         create_job = self.cleaned_data.get('create_job')
         if create_job < 0:
             raise forms.ValidationError("Please enter a valid number.")
         return create_job
     
     def clean_retained_job(self):
+        """Validate retained job count."""
         retained_job = self.cleaned_data.get('retained_job')
         if retained_job < 0:
             raise forms.ValidationError("Please enter a valid number.")
         return retained_job
     
     def clean_no_emp(self):
+        """Validate employee count."""
         no_emp = self.cleaned_data.get('no_emp')
         if no_emp < 0:
             raise forms.ValidationError("Please enter a valid number.")
         return no_emp
     
     def clean(self):
+        """Validate form-wide constraints."""
         cleaned_data = super().clean()
         disbursement_gross = cleaned_data.get('disbursement_gross')
         gr_appv = cleaned_data.get('gr_appv')
